@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import Landingpage from './landingPage.jsx'
+import LoginPage from './loginpage.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Landingpage />
+    <LoginPage />
   </StrictMode>,
 )
