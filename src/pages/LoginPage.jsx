@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import './css/styles.css';
+import '../css/styles.css';
+import { Link } from 'react-router-dom';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
@@ -33,7 +34,7 @@ function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         required 
                     />
-                    <p className='text-size-11'>Forgot your password? <a href="/forgot-password">Click here</a></p>
+                    <p className='text-size-11'>Forgot your password? <Link to="/forgot-password">Click here</Link></p>
                     <button type="submit">Login</button>
                 </form>
                 <hr />
