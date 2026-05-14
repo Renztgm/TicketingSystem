@@ -1,4 +1,6 @@
-
+:root{
+    --text-color: #000;
+}
 
 body{
     margin: 0;
@@ -61,4 +63,36 @@ body{
 .container{
     width: 80%;
     margin: 0 auto;
+}
+
+.container-header{
+    padding: 20px 0;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.navbar {
+    background-color: #fff;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+    
+}
+
+.navbar li {
+    list-style-type: none;
+    display: inline;
+    padding: 0 15px;
+    color: var(--text-color);
+}
+
+.navbar a {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.navbar a:hover {
+    color: #4CAF50;
 }

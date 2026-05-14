@@ -5,10 +5,14 @@ function NavBarComponent() {
     return (
         <nav className="navbar">
             <ul>
-                <li><Link to="/">Home</Link></li>
                 <li><Link to="/dashboard">Dashboard</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
+            </ul>
+            <ul>
+                <li><Link to="/">Logout</Link></li>
             </ul>
         </nav>
     );
 }
+
+export default NavBarComponent;

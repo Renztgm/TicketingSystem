@@ -3,7 +3,7 @@ import '../css/styles.css';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBarComponent';
 
-function DashboardPage() {
+function ProfilePage() {
     return (
         <html>
             <head>
@@ -14,8 +14,8 @@ function DashboardPage() {
                     <Navbar />
                 </nav>
                 <div className='container-header'>
-                    <h1>Dashboard</h1>
-                    <p>Welcome to the dashboard!</p>
+                    <h1>Profile</h1>
+                    <p>This is your profile page.</p>
                 </div>
 
             </body>
@@ -23,4 +23,4 @@ function DashboardPage() {
     );
 }
 
-export default DashboardPage;
+export default ProfilePage;
