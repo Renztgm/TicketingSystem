@@ -35,7 +35,7 @@ function LoginPage() {
                         required 
                     />
                     <p className='text-size-11'>Forgot your password? <Link to="/forgot-password">Click here</Link></p>
-                    <button type="submit">Login</button>
+                    <Link to="/dashboard"><button type="submit">Login</button></Link>
                 </form>
                 <hr />
                 <div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../css/styles.css';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBarComponent';
+import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 
 function DashboardPage() {
     return (
@@ -13,11 +14,13 @@ function DashboardPage() {
                 <nav>
                     <Navbar />
                 </nav>
-                <div className='container-header'>
-                    <h1>Dashboard</h1>
-                    <p>Welcome to the dashboard!</p>
+                <div className="dashboard-container">
+                    <NavBarVerticalComponent />
+                    <div className="dashboard-content">
+                        <h1>Dashboard</h1>
+                        <p>Welcome to the Dashboard!</p>
+                    </div>
                 </div>
-
             </body>
         </html>
     );
