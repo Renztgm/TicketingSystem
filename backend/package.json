@@ -1,0 +1,26 @@
+{
+  "name": "ticketing-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API for ticketing system",
+  "author": "delicariu, baconjhonlorenz",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^6.0.0"
+  }
+}
