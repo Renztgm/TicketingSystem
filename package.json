@@ -1,0 +1,47 @@
+{
+  "name": "ticketingsystem",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Backend API for ticketing system",
+  "homepage": "https://github.com/Renztgm/TicketingSystem#readme",
+  "bugs": {
+    "url": "https://github.com/Renztgm/TicketingSystem/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Renztgm/TicketingSystem.git"
+  },
+  "license": "ISC",
+  "author": "delicariu,baconjhonlorenz",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "vite",
+    "server": "nodemon server.js",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "nodemon": "^3.1.14",
+    "vite": "^8.0.13"
+  }
+}
