@@ -5,9 +5,9 @@ function NavBarVerticalComponent() {
     return (
         <nav className="navbarvertical">
             <ul>
-                <li><Link to="#">1</Link></li>
-                <li><Link to="#">2</Link></li>
-                <li><Link to="#">3</Link></li>
+                <li><Link to="#">Create Ticket</Link></li>
+                <li><Link to="#">View Tickets</Link></li>
+                <li><Link to="#">Generate Report</Link></li>
             </ul>
         </nav>
     );
