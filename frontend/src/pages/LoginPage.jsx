@@ -1,52 +1,83 @@
-import React, { useState } from 'react';
-import '../css/styles.css';
-import { Link } from 'react-router-dom';
+    import React, { useState } from 'react';
+    import '../css/styles.css';
+    import { Link, useNavigate } from 'react-router-dom';
 
-function LoginPage() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    function LoginPage() {
+        const [username, setUsername] = useState('');
+        const [password, setPassword] = useState('');
+        const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Login attempt:', { username, password });
-        // Add your login logic here
-    };
+        const navigate = useNavigate();
 
-    return (
-        <div className="login-page">
-            <div className="logo">
-                {/* <h1>Ticketing System</h1> */}
-            </div>
-            <div className="login-form">
-                <h1 className='text-align-center'>Login</h1>
-                <form  onSubmit={handleSubmit}>
-                    <input 
-                        type="text" 
-                        placeholder="Username" 
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required 
-                    />
-                    <input 
-                        type="password" 
-                        placeholder="Password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required 
-                    />
-                    <p className='text-size-11'>Forgot your password? <Link to="/forgot-password">Click here</Link></p>
-                    <Link to="/dashboard"><button type="submit">Login</button></Link>
-                </form>
-                <hr />
-                <div>
-                    <p className='text-size-10 text-align-center'>If you don't have account please contact the Administrator. </p> 
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            setErrorMessage('');
+            try {
+            // 3. Send the data to your Express backend
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }), // Send email, not username
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log('Login successful!', data);
+                // Later we will save the JWT token here!
+                
+                // 4. Navigate to dashboard ONLY if backend says success
+                navigate('/dashboard'); 
+            } else {
+                // If wrong password, show the error from the backend
+                setErrorMessage(data.error || 'Login failed');
+            }
+        } catch (err) {
+            console.error('Connection error:', err);
+            setErrorMessage('Could not connect to the backend server.');
+        }
+        };
+
+        return (
+            <div className="login-page">
+                <div className="logo">
+                    {/* <h1>Ticketing System</h1> */}
+                </div>
+                <div className="login-form">
+                    <h1 className='text-align-center'>Login</h1>
+
+                    {/* Display errors if they exist */} {errorMessage && <p style={{ color: 'red', textAlign: 'center' }}>{errorMessage}</p>}
+
+                    <form  onSubmit={handleSubmit}>
+                        <input 
+                            type="text" 
+                            placeholder="Username" 
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required 
+                        />
+                        <input 
+                            type="password" 
+                            placeholder="Password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required 
+                        />
+                        <p className='text-size-11'>Forgot your password? <Link to="/forgot-password">Click here</Link></p>
+                    <button type="submit">Login</button>
+                    </form>
+                    <hr />
+                    <div>
+                        <p className='text-size-10 text-align-center'>If you don't have account please contact the Administrator. </p> 
+                    </div>
+                </div>
+                <div className="footer">
+                    <p className='text-size-10 text-align-center'>© 2023 Ticketing System. All rights reserved.</p>
                 </div>
             </div>
-            <div className="footer">
-                <p className='text-size-10 text-align-center'>© 2023 Ticketing System. All rights reserved.</p>
-            </div>
-        </div>
-    );
-}
+        );
+    }
 
-export default LoginPage;
+    export default LoginPage;
