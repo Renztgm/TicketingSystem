@@ -21,7 +21,7 @@ app.get('/api/status', (req, res) => {
   res.json({ message: 'Ticketing Backend is running on port 5000!' });
 });
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/admin/create-user', async (req, res) => {
   try {
     // 1. Grab the data the frontend sent us
     const { name, email, password } = req.body;
