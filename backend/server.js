@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -13,12 +14,147 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
+function getTokenFromRequest(req) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  return authHeader.slice(7);
+}
+
+function authenticateToken(req, res, next) {
+  const token = getTokenFromRequest(req);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Missing authentication token.' });
+  }
+
+  try {
+    req.auth = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
+    return next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token.' });
+  }
+}
+
 app.get('/', (req, res) => {
     res.send('Ticketing System Backend is Live!');
 });
 
 app.get('/api/status', (req, res) => {
   res.json({ message: 'Ticketing Backend is running on port 5000!' });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    const passwordIsValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordIsValid) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'dev-secret',
+      { expiresIn: '1d' }
+    );
+
+    return res.json({
+      message: 'Login successful.',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    return res.json({ user });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
+  try {
+    const [totalUsers, usersByRole, recentUsers] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.findMany({
+        select: { role: true },
+      }),
+      prisma.user.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    const roleCounts = usersByRole.reduce(
+      (counts, user) => {
+        counts[user.role] += 1;
+        return counts;
+      },
+      { USER: 0, AGENT: 0, ADMIN: 0 }
+    );
+
+    return res.json({
+      summary: {
+        totalUsers,
+        roleCounts,
+      },
+      recentUsers,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
 });
 
 app.post('/api/admin/create-user', async (req, res) => {

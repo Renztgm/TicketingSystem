@@ -2,8 +2,12 @@
     import '../css/styles.css';
     import { Link, useNavigate } from 'react-router-dom';
 
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const TOKEN_KEY = 'ticketing_token';
+    const USER_KEY = 'ticketing_user';
+
     function LoginPage() {
-        const [username, setUsername] = useState('');
+        const [email, setEmail] = useState('');
         const [password, setPassword] = useState('');
         const [errorMessage, setErrorMessage] = useState('');
 
@@ -13,22 +17,19 @@
             e.preventDefault();
             setErrorMessage('');
             try {
-            // 3. Send the data to your Express backend
-            const response = await fetch('http://localhost:5000/api/auth/login', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }), // Send email, not username
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                console.log('Login successful!', data);
-                // Later we will save the JWT token here!
-                
-                // 4. Navigate to dashboard ONLY if backend says success
+                localStorage.setItem(TOKEN_KEY, data.token);
+                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
                 navigate('/dashboard'); 
             } else {
                 // If wrong password, show the error from the backend
@@ -39,6 +40,12 @@
             setErrorMessage('Could not connect to the backend server.');
         }
         };
+
+        React.useEffect(() => {
+            if (localStorage.getItem(TOKEN_KEY)) {
+                navigate('/dashboard');
+            }
+        }, [navigate]);
 
         return (
             <div className="login-page">
@@ -53,9 +60,9 @@
                     <form  onSubmit={handleSubmit}>
                         <input 
                             type="text" 
-                            placeholder="Username" 
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required 
                         />
                         <input 
