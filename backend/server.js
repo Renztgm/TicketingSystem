@@ -170,8 +170,12 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/admin/create-user', async (req, res) => {
+app.post('/api/admin/create-user', authenticateToken, async (req, res) => {
   try {
+    if (req.auth.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden. Admin access is required.' });
+    }
+
     // 1. Grab the data the frontend sent us
     const { name, email, password, role } = req.body;
 

@@ -12,11 +12,32 @@ import GenerateReport from "./pages/GenerateReport.jsx"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
+const USER_KEY = 'ticketing_user';
 
 function ProtectedRoute() {
   const token = localStorage.getItem(TOKEN_KEY);
 
   if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function AdminRoute() {
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  try {
+    const user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+
+    if (user?.role !== 'ADMIN') {
+      return <Navigate to="/dashboard" replace />;
+    }
+  } catch (error) {
     return <Navigate to="/" replace />;
   }
 
@@ -43,7 +64,6 @@ function App() {
     <Router>
         <Routes>
             <Route path="/" element={<LoginPage />} />
-          <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -53,6 +73,9 @@ function App() {
           <Route path="/view-ticket/:ticketId" element={<ViewTicket />} />
           <Route path="/view-history" element={<HistoryTicket />} />
           <Route path="/generate-report" element={<GenerateReport />} />  
+        </Route>
+        <Route element={<AdminRoute />}>
+          <Route path="/create-account" element={<CreateAccount />} />
         </Route>
         </Routes>
     </Router>  

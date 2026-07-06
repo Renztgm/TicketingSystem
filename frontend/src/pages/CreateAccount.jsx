@@ -5,6 +5,8 @@ import Navbar from '../components/NavBarComponent';
 import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const TOKEN_KEY = 'ticketing_token';
+const USER_KEY = 'ticketing_user';
 
 function CreateAccount() {
 	const navigate = useNavigate();
@@ -18,6 +20,26 @@ function CreateAccount() {
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const [isForbidden, setIsForbidden] = useState(false);
+
+	React.useEffect(() => {
+		const token = localStorage.getItem(TOKEN_KEY);
+
+		if (!token) {
+			navigate('/');
+			return;
+		}
+
+		try {
+			const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+
+			if (currentUser?.role !== 'ADMIN') {
+				setIsForbidden(true);
+			}
+		} catch (error) {
+			navigate('/');
+		}
+	}, [navigate]);
 
 	const handleInputChange = (event) => {
 		const { name, value } = event.target;
@@ -55,6 +77,7 @@ function CreateAccount() {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY) || ''}`,
 				},
 				body: JSON.stringify({
 					name: formData.name.trim(),
@@ -70,6 +93,27 @@ function CreateAccount() {
 				throw new Error(data.error || 'Failed to create account.');
 			}
 
+
+	if (isForbidden) {
+		return (
+			<div className="dashboard-wrapper">
+				<nav>
+					<Navbar />
+				</nav>
+				<div className="dashboard-container">
+					<div className="navbarvertical">
+						<NavBarVerticalComponent />
+					</div>
+					<div className="dashboard-content">
+						<div className="container">
+							<h1>Access Forbidden</h1>
+							<p>You do not have permission to create accounts.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 			setSuccessMessage(data.message || 'Account created successfully. You can now log in.');
 			setFormData({
 				name: '',
