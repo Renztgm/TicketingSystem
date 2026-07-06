@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
+import { parse } from 'json2csv';
 
 dotenv.config();
 
@@ -311,6 +312,51 @@ app.get('/api/tickets/:ticketId', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/reports/export', authenticateToken, async (req, res) => {
+  try {
+    // 1. Role Authorization: Block standard users
+    if (req.auth.role === 'USER') {
+      return res.status(403).json({ error: 'Access denied. You do not have permission to export reports.' });
+    }
+
+    // 2. Fetch all tickets and include the creator's user data
+    const tickets = await prisma.ticket.findMany({
+      include: {
+        user: {
+          select: { name: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // 3. Format the data for the CSV
+    // The keys ('Ticket ID', 'Title') will automatically become the top header row
+    const exportData = tickets.map(ticket => ({
+      'Ticket ID': ticket.id,
+      'Title': ticket.title,
+      'Status': ticket.status,
+      'Priority': ticket.priority,
+      'Category': ticket.category,
+      'Created By': ticket.user ? (ticket.user.name || ticket.user.email) : 'Unknown User',
+      'Date Created': ticket.createdAt.toLocaleString() // Includes date and time
+    }));
+
+    // 4. Convert the array of objects into a CSV string
+    const csv = parse(exportData);
+
+    // 5. Set headers to tell the browser this is a downloadable CSV file
+    res.header('Content-Type', 'text/csv');
+    res.attachment('tickets_report.csv');
+    
+    // 6. Send the file!
+    return res.send(csv);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to generate report.' });
   }
 });
 

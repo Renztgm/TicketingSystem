@@ -30,7 +30,7 @@ function NavBarVerticalComponent() {
             { to: '/view-ticket', label: 'View Tickets' },
             { to: '/view-history', label: 'History Tickets' },
             { to: '/create-account', label: 'Create Account' },
-            { to: '#', label: 'Generate Report' },
+            { to: '/generate-report', label: 'Generate Report' },
         ],
     };
 
