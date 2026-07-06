@@ -4,6 +4,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -13,6 +14,16 @@ const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
+// Create the rate limit rule
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: { 
+    error: 'Too many login attempts from this IP, please try again after 15 minutes.' 
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 function getTokenFromRequest(req) {
   const authHeader = req.headers.authorization;
@@ -47,7 +58,8 @@ app.get('/api/status', (req, res) => {
   res.json({ message: 'Ticketing Backend is running on port 5000!' });
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
+  
   try {
     const { email, password } = req.body;
 
