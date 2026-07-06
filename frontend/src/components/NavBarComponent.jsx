@@ -16,6 +16,12 @@ function NavBarComponent() {
 
     return (
         <nav className="navbar">
+
+            <ul>
+                <li>
+                    <b>Ticketing System</b>
+                </li>
+            </ul>
             <ul>
                 <li><Link to="/dashboard">Dashboard</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
