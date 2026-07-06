@@ -160,7 +160,10 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
 app.post('/api/admin/create-user', async (req, res) => {
   try {
     // 1. Grab the data the frontend sent us
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
+
+    const allowedRoles = ['USER', 'AGENT', 'ADMIN'];
+    const userRole = allowedRoles.includes(role) ? role : 'USER';
 
     // 2. Check if the user already exists in the database
     const existingUser = await prisma.user.findUnique({
@@ -180,7 +183,7 @@ app.post('/api/admin/create-user', async (req, res) => {
         name: name,
         email: email,
         password: hashedPassword,
-        // Role defaults to "CUSTOMER" based on our schema.prisma
+        role: userRole,
       }
     });
 
@@ -193,6 +196,109 @@ app.post('/api/admin/create-user', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong on the server." });
+  }
+});
+
+app.post('/api/tickets/create', authenticateToken, async (req, res) => {
+  try {
+    const { title, description, priority, category } = req.body;
+    const userId = req.auth.userId;
+
+    // Validate required fields
+    if (!title || !description) {
+      return res.status(400).json({ error: 'Title and description are required.' });
+    }
+
+    // Create the ticket in the database
+    const ticket = await prisma.ticket.create({
+      data: {
+        title,
+        description,
+        priority: priority || 'MEDIUM',
+        category: category || 'GENERAL',
+        userId,
+      },
+    });
+
+    return res.status(201).json({
+      message: 'Ticket created successfully.',
+      ticket: {
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        priority: ticket.priority,
+        category: ticket.category,
+        status: ticket.status,
+        createdAt: ticket.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/tickets/history', authenticateToken, async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.findMany({
+      where: {
+        userId: req.auth.userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        priority: true,
+        category: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.json({ tickets });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/tickets/:ticketId', authenticateToken, async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found.' });
+    }
+
+    const isOwner = ticket.userId === req.auth.userId;
+    const canViewAnyTicket = ['ADMIN', 'AGENT'].includes(req.auth.role);
+
+    if (!isOwner && !canViewAnyTicket) {
+      return res.status(403).json({ error: 'You do not have permission to view this ticket.' });
+    }
+
+    return res.json({ ticket });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
   }
 });
 

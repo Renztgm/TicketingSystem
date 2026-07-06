@@ -73,15 +73,16 @@
                             required 
                         />
                         <p className='text-size-11'>Forgot your password? <Link to="/forgot-password">Click here</Link></p>
+                        <p className='text-size-11'>Need an account? <Link to="/create-account">Create one here</Link></p>
                     <button type="submit">Login</button>
                     </form>
                     <hr />
                     <div>
-                        <p className='text-size-10 text-align-center'>If you don't have account please contact the Administrator. </p> 
+                        <p className='text-size-10 text-align-center'>If you do not have an account yet, use the create account link above. </p> 
                     </div>
                 </div>
                 <div className="footer">
-                    <p className='text-size-10 text-align-center'>© 2023 Ticketing System. All rights reserved.</p>
+                    <p className='text-size-10 text-align-center'>© 2026 Ticketing System. Programmed by Kre-eyt. All rights reserved.</p>
                 </div>
             </div>
         );
