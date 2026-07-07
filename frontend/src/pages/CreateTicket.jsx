@@ -101,227 +101,225 @@ function CreateTicket() {
                     <NavBarVerticalComponent />
                 </div>
                 <div className="dashboard-content">
-                    <div className="container">
-                        <h1>Create New Ticket</h1>
+                    <h1>Create New Ticket</h1>
 
-                        {errorMessage && (
-                            <div className="error-message" style={{ 
-                                color: '#f44336', 
-                                backgroundColor: '#ffebee',
-                                padding: '12px',
-                                borderRadius: '5px',
-                                marginBottom: '20px',
-                                border: '1px solid #ef5350'
-                            }}>
-                                {errorMessage}
-                            </div>
-                        )}
-
-                        {successMessage && (
-                            <div className="success-message" style={{ 
-                                color: '#4CAF50', 
-                                backgroundColor: '#e8f5e9',
-                                padding: '12px',
-                                borderRadius: '5px',
-                                marginBottom: '20px',
-                                border: '1px solid #81c784'
-                            }}>
-                                {successMessage}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="create-ticket-form" style={{
-                            maxWidth: '600px',
-                            margin: '0 auto',
+                    {errorMessage && (
+                        <div className="error-message" style={{ 
+                            color: '#f44336', 
+                            backgroundColor: '#ffebee',
+                            padding: '12px',
+                            borderRadius: '5px',
+                            marginBottom: '20px',
+                            border: '1px solid #ef5350'
                         }}>
-                            <div className="form-group" style={{
-                                marginBottom: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                            }}>
-                                <label htmlFor="title" style={{
-                                    marginBottom: '8px',
-                                    fontWeight: '500',
-                                    color: 'var(--text-color)',
-                                }}>
-                                    Ticket Title <span style={{ color: '#f44336' }}>*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    id="title"
-                                    name="title"
-                                    placeholder="Enter ticket title"
-                                    value={formData.title}
-                                    onChange={handleInputChange}
-                                    required
-                                    maxLength="100"
-                                    style={{
-                                        padding: '10px',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '5px',
-                                        fontSize: '14px',
-                                        fontFamily: 'inherit',
-                                    }}
-                                />
-                                <small style={{
-                                    marginTop: '4px',
-                                    color: '#666',
-                                    fontSize: '12px',
-                                }}>
-                                    {formData.title.length}/100 characters
-                                </small>
-                            </div>
+                            {errorMessage}
+                        </div>
+                    )}
 
-                            <div className="form-group" style={{
-                                marginBottom: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                            }}>
-                                <label htmlFor="description" style={{
-                                    marginBottom: '8px',
-                                    fontWeight: '500',
-                                    color: 'var(--text-color)',
-                                }}>
-                                    Description <span style={{ color: '#f44336' }}>*</span>
-                                </label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    placeholder="Describe your issue in detail"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    required
-                                    maxLength="2000"
-                                    rows="6"
-                                    style={{
-                                        padding: '10px',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '5px',
-                                        fontSize: '14px',
-                                        fontFamily: 'inherit',
-                                        resize: 'vertical',
-                                    }}
-                                />
-                                <small style={{
-                                    marginTop: '4px',
-                                    color: '#666',
-                                    fontSize: '12px',
-                                }}>
-                                    {formData.description.length}/2000 characters
-                                </small>
-                            </div>
+                    {successMessage && (
+                        <div className="success-message" style={{ 
+                            color: '#4CAF50', 
+                            backgroundColor: '#e8f5e9',
+                            padding: '12px',
+                            borderRadius: '5px',
+                            marginBottom: '20px',
+                            border: '1px solid #81c784'
+                        }}>
+                            {successMessage}
+                        </div>
+                    )}
 
-                            <div className="form-group" style={{
-                                marginBottom: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
+                    <form onSubmit={handleSubmit} className="create-ticket-form" style={{
+                        maxWidth: '600px',
+                        margin: '0 auto',
+                    }}>
+                        <div className="form-group" style={{
+                            marginBottom: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            <label htmlFor="title" style={{
+                                marginBottom: '8px',
+                                fontWeight: '500',
+                                color: 'var(--text-color)',
                             }}>
-                                <label htmlFor="priority" style={{
-                                    marginBottom: '8px',
-                                    fontWeight: '500',
-                                    color: 'var(--text-color)',
-                                }}>
-                                    Priority
-                                </label>
-                                <select
-                                    id="priority"
-                                    name="priority"
-                                    value={formData.priority}
-                                    onChange={handleInputChange}
-                                    style={{
-                                        padding: '10px',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '5px',
-                                        fontSize: '14px',
-                                        fontFamily: 'inherit',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    <option value="LOW">Low</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HIGH">High</option>
-                                    <option value="URGENT">Urgent</option>
-                                </select>
-                            </div>
+                                Ticket Title <span style={{ color: '#f44336' }}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                placeholder="Enter ticket title"
+                                value={formData.title}
+                                onChange={handleInputChange}
+                                required
+                                maxLength="100"
+                                style={{
+                                    padding: '10px',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '5px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit',
+                                }}
+                            />
+                            <small style={{
+                                marginTop: '4px',
+                                color: '#666',
+                                fontSize: '12px',
+                            }}>
+                                {formData.title.length}/100 characters
+                            </small>
+                        </div>
 
-                            <div className="form-group" style={{
-                                marginBottom: '30px',
-                                display: 'flex',
-                                flexDirection: 'column',
+                        <div className="form-group" style={{
+                            marginBottom: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            <label htmlFor="description" style={{
+                                marginBottom: '8px',
+                                fontWeight: '500',
+                                color: 'var(--text-color)',
                             }}>
-                                <label htmlFor="category" style={{
-                                    marginBottom: '8px',
-                                    fontWeight: '500',
-                                    color: 'var(--text-color)',
-                                }}>
-                                    Category
-                                </label>
-                                <select
-                                    id="category"
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleInputChange}
-                                    style={{
-                                        padding: '10px',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '5px',
-                                        fontSize: '14px',
-                                        fontFamily: 'inherit',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    <option value="GENERAL">General</option>
-                                    <option value="BUG">Bug</option>
-                                    <option value="FEATURE_REQUEST">Feature Request</option>
-                                    <option value="ACCOUNT">Account Issue</option>
-                                    <option value="BILLING">Billing</option>
-                                    <option value="OTHER">Other</option>
-                                </select>
-                            </div>
+                                Description <span style={{ color: '#f44336' }}>*</span>
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                placeholder="Describe your issue in detail"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                required
+                                maxLength="2000"
+                                rows="6"
+                                style={{
+                                    padding: '10px',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '5px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit',
+                                    resize: 'vertical',
+                                }}
+                            />
+                            <small style={{
+                                marginTop: '4px',
+                                color: '#666',
+                                fontSize: '12px',
+                            }}>
+                                {formData.description.length}/2000 characters
+                            </small>
+                        </div>
 
-                            <div style={{
-                                display: 'flex',
-                                gap: '10px',
-                                justifyContent: 'center',
+                        <div className="form-group" style={{
+                            marginBottom: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            <label htmlFor="priority" style={{
+                                marginBottom: '8px',
+                                fontWeight: '500',
+                                color: 'var(--text-color)',
                             }}>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: isLoading ? '#ccc' : 'var(--primary-color)',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                                        fontSize: '14px',
-                                        fontWeight: '500',
-                                        transition: 'all 0.3s ease',
-                                    }}
-                                >
-                                    {isLoading ? 'Creating...' : 'Create Ticket'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/dashboard')}
-                                    disabled={isLoading}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: '#e0e0e0',
-                                        color: 'var(--text-color)',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                                        fontSize: '14px',
-                                        fontWeight: '500',
-                                        transition: 'all 0.3s ease',
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                                Priority
+                            </label>
+                            <select
+                                id="priority"
+                                name="priority"
+                                value={formData.priority}
+                                onChange={handleInputChange}
+                                style={{
+                                    padding: '10px',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '5px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="URGENT">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group" style={{
+                            marginBottom: '30px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            <label htmlFor="category" style={{
+                                marginBottom: '8px',
+                                fontWeight: '500',
+                                color: 'var(--text-color)',
+                            }}>
+                                Category
+                            </label>
+                            <select
+                                id="category"
+                                name="category"
+                                value={formData.category}
+                                onChange={handleInputChange}
+                                style={{
+                                    padding: '10px',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '5px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="GENERAL">General</option>
+                                <option value="BUG">Bug</option>
+                                <option value="FEATURE_REQUEST">Feature Request</option>
+                                <option value="ACCOUNT">Account Issue</option>
+                                <option value="BILLING">Billing</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            gap: '10px',
+                            justifyContent: 'center',
+                        }}>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                style={{
+                                    padding: '10px 30px',
+                                    backgroundColor: isLoading ? '#ccc' : 'var(--primary-color)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.3s ease',
+                                }}
+                            >
+                                {isLoading ? 'Creating...' : 'Create Ticket'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/dashboard')}
+                                disabled={isLoading}
+                                style={{
+                                    padding: '10px 30px',
+                                    backgroundColor: '#e0e0e0',
+                                    color: 'var(--text-color)',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.3s ease',
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

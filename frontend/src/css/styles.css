@@ -17,7 +17,204 @@ body{
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;   
-    background-color: var(--bg-primary);
+    background:
+        radial-gradient(circle at top left, rgba(76, 175, 80, 0.14), transparent 28%),
+        linear-gradient(180deg, #f8fafc 0%, #eef6f0 100%);
+    color: var(--text-color);
+}
+
+a {
+    color: var(--primary-color);
+}
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px;
+}
+
+.auth-shell {
+    width: min(1080px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: stretch;
+}
+
+.auth-copy,
+.auth-card {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 22px;
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-copy {
+    padding: 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-eyebrow {
+    margin: 0 0 12px 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+}
+
+.auth-copy h1 {
+    margin: 0;
+    font-size: clamp(32px, 4vw, 54px);
+    line-height: 1.05;
+    max-width: 12ch;
+}
+
+.auth-description {
+    margin: 18px 0 0 0;
+    max-width: 44ch;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #475569;
+}
+
+.auth-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 28px 0 0 0;
+    display: grid;
+    gap: 12px;
+}
+
+.auth-feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #1f2937;
+    font-size: 15px;
+}
+
+.auth-feature-list li::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0.12);
+    flex: 0 0 auto;
+}
+
+.auth-card {
+    padding: 36px;
+    align-self: center;
+}
+
+.auth-card h2 {
+    margin: 0 0 24px 0;
+    font-size: 28px;
+    line-height: 1.1;
+}
+
+.auth-error {
+    margin: 0 0 18px 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(244, 67, 54, 0.24);
+    background: #fff5f5;
+    color: #c62828;
+    font-size: 14px;
+}
+
+.auth-form {
+    display: grid;
+    gap: 12px;
+}
+
+.auth-form label {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.auth-form input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #fff;
+    font-size: 15px;
+    color: var(--text-color);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form input:focus {
+    border-color: rgba(76, 175, 80, 0.7);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.12);
+}
+
+.auth-links {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+.auth-links a {
+    font-size: 13px;
+    text-decoration: none;
+    color: #475569;
+}
+
+.auth-links a:hover {
+    color: var(--primary-color);
+}
+
+.auth-form button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 13px 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.auth-form button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-form button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.auth-footnote {
+    margin: 16px 0 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.auth-footer {
+    width: min(1080px, 100%);
+    margin: 18px auto 0;
+    color: #64748b;
+    font-size: 12px;
+    text-align: center;
 }
 
 .login-form{
