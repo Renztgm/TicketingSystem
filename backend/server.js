@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { parse } from 'json2csv';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -50,6 +51,20 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Invalid or expired token.' });
   }
 }
+
+function generateTicketId() {
+  // 1. Get the current date and format it as YYYYMMDD
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0].replace(/-/g, ''); 
+  
+  // 2. Generate a random 10-character hex string (5 bytes = 10 hex characters)
+  const uniqueId = crypto.randomBytes(5).toString('hex').toUpperCase();
+  
+  // 3. Combine them together
+  return `TKT-${formattedDate}-${uniqueId}`; 
+}
+
+// Example output: TKT-20260707-8F4B2A9C1E
 
 app.get('/', (req, res) => {
     res.send('Ticketing System Backend is Live!');
@@ -171,10 +186,11 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/admin/create-user', authenticateToken, async (req, res) => {
+// app.post('/api/admin/create-user', async (req, res) => {
   try {
     if (req.auth.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Forbidden. Admin access is required.' });
-    }
+     }
 
     // 1. Grab the data the frontend sent us
     const { name, email, password, role } = req.body;
@@ -226,14 +242,18 @@ app.post('/api/tickets/create', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Title and description are required.' });
     }
 
+    // Generate the custom ID!
+    const customTicketId = generateTicketId();
+    
     // Create the ticket in the database
     const ticket = await prisma.ticket.create({
       data: {
+        id: customTicketId,
         title,
         description,
         priority: priority || 'MEDIUM',
         category: category || 'GENERAL',
-        userId,
+        userId: req.auth.userId,
       },
     });
 
