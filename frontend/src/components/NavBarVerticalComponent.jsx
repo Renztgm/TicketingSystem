@@ -31,6 +31,7 @@ function NavBarVerticalComponent() {
             { to: '/view-history', label: 'History Tickets' },
             { to: '/create-account', label: 'Create Account' },
             { to: '/generate-report', label: 'Generate Report' },
+            { to: '/#', label: 'Password Reset' },
         ],
     };
 

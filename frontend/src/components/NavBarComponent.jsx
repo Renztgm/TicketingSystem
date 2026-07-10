@@ -27,7 +27,7 @@ function NavBarComponent() {
                 <li><Link to="/profile">Profile</Link></li>
             </ul>
             <ul>
-                <li><button type="button" onClick={handleLogout}>Logout</button></li>
+                <li><button className="btn btn-outline" onClick={handleLogout}>Logout</button></li>
             </ul>
         </nav>
     );
