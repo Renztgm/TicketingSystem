@@ -235,7 +235,6 @@ app.post('/api/admin/create-user', authenticateToken, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // NEW: Login route
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -277,10 +276,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend server is live on http://localhost:${PORT}`);
-});
-=======
 app.post('/api/tickets/create', authenticateToken, async (req, res) => {
   try {
     const { title, description, priority, category } = req.body;
@@ -440,4 +435,3 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export default app;
->>>>>>> 1e7f8b1f0d65b466688208e89e469c3d0bdeacd3
