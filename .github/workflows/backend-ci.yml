@@ -1,0 +1,49 @@
+name: Backend CI/CD Automation
+
+# Trigger the workflow on pushes or pull requests to the main branch
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # Set the working directory to your backend folder if it's in a subdirectory
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    # Step 1: Clone the repository onto the GitHub runner machine
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # Step 2: Install Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Matches standard Node environments
+        cache: 'npm'
+        cache-dependency-path: './backend/package-lock.json'
+
+    # Step 3: Clean install project dependencies
+    - name: Install Dependencies
+      run: npm ci
+
+    # Step 4: Generate the Prisma Client
+    # Since Prisma requires an environment database structure to generate types, 
+    # we run generate so Jest tests don't fail due to missing prisma types.
+    - name: Generate Prisma Client
+      run: npx prisma generate
+
+    # Step 5: Run Automated Jest Tests
+    # We provide a dummy DATABASE_URL and JWT_SECRET environment variables 
+    # just in case your code checks for them upon initialization.
+    - name: Run Tests
+      env:
+        DATABASE_URL: "postgresql://mockuser:mockpass@localhost:5432/mockdb"
+        JWT_SECRET: "ci-test-secret-key"
+      run: npm run test
