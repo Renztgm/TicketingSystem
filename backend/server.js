@@ -4,7 +4,6 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { parse } from 'json2csv';
 import crypto from 'crypto';
