@@ -29,8 +29,8 @@ function LoginPage() {
                 console.log('Login successful!', data);
 
                 // Save the JWT and user info returned by the backend
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('ticketing_token', data.token);
+                localStorage.setItem('ticketing_user', JSON.stringify(data.user));
 
                 navigate('/dashboard');
             } else {
