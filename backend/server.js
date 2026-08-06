@@ -20,10 +20,10 @@ app.use(cors());
 app.use(express.json());
 // Create the rate limit rule
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 20, // Limit each IP to 20 requests per windowMs
   message: { 
-    error: 'Too many login attempts from this IP, please try again after 15 minutes.' 
+    error: 'Too many login attempts from this IP, please try again after 5 minutes.' 
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -378,7 +378,7 @@ app.get('/api/tickets/:ticketId', authenticateToken, async (req, res) => {
     return res.json({ ticket });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Something went wrong on the server.' });
+    return res.status(500).json({ error: 'Something went wrong on the server(error TK1004).' });
   }
 });
 

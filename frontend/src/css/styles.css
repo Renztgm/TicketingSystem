@@ -384,6 +384,26 @@ a {
     border-left-color: var(--primary-color);
 }
 
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-primary);
+}
+
+.profile-page {
+    height: 100vh;
+    background-color: var(--bg-primary);
+}
+
+.profile-content {
+    width: 80%;
+    margin: 0 auto;
+    padding: 30px;
+}
+
 .dashboard-wrapper {
     display: flex;
     flex-direction: column;

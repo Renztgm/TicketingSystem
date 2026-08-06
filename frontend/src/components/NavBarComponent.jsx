@@ -25,6 +25,7 @@ function NavBarComponent() {
             <ul>
                 <li><Link to="/dashboard">Dashboard</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
+                <li><Link to="/chats">Chats</Link></li>
             </ul>
             <ul>
                 <li><button className="btn btn-outline" onClick={handleLogout}>Logout</button></li>

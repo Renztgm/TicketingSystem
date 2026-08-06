@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import '../css/styles.css';
 import Navbar from '../components/NavBarComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
 
-function ProfilePage() {
+function ChatsPage() {
     const [profile, setProfile] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
-
+    
     useEffect(() => {
         const loadProfile = async () => {
             try {
@@ -40,23 +39,20 @@ function ProfilePage() {
     }
 
     if (!profile) {
-        return <div className="loading-spinner"><p>Loading profile...</p></div>;
+        return <div className="loading-spinner"><p>Loading Chats...</p></div>;
     }
 
     return (
-        <div className='profile-page'>
+        <div className="dashboard-wrapper">
             <nav>
                 <Navbar />
             </nav>
-            <div className="profile-content">
-                <h1>Profile</h1>
-                <p>Name: {profile.name || 'No name set'}</p>
-                <p>Email: {profile.email}</p>
-                <p>Role: {profile.role}</p>
-                <p>Joined: {new Date(profile.createdAt).toLocaleString()}</p>
+            <div className="chats-wrapper">
+                <h1>Chats Page</h1>
+                <p>This is the Chats page.</p>
             </div>
         </div>
     );
 }
 
-export default ProfilePage;
+export default ChatsPage;
