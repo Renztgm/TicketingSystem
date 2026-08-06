@@ -66,7 +66,42 @@ function generateTicketId() {
   return `TKT-${formattedDate}-${uniqueId}`; 
 }
 
+async function runPrismaQueryWithReconnect(queryFn) {
+  try {
+    return await queryFn();
+  } catch (error) {
+    if (error?.code === 'P1017') {
+      try {
+        await prisma.$disconnect();
+      } catch (disconnectError) {
+        console.error(disconnectError);
+      }
+
+      return await queryFn();
+    }
+
+    throw error;
+  }
+}
+
+async function ensureTicketAssignmentSchema() {
+  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "Assigned_to" TEXT');
+  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" DROP CONSTRAINT IF EXISTS "tickets_Assigned_to_fkey"');
+  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" ADD CONSTRAINT "tickets_Assigned_to_fkey" FOREIGN KEY ("Assigned_to") REFERENCES "users"("id") ON DELETE SET NULL NOT VALID');
+}
+
 // Example output: TKT-20260707-8F4B2A9C1E
+
+async function resolveConversationFromChatId(chatId) {
+  return prisma.conversation.findUnique({
+    where: {
+      id: chatId,
+    },
+    include: {
+      participants: true,
+    },
+  });
+}
 
 app.get('/', (req, res) => {
     res.send('Ticketing System Backend is Live!');
@@ -146,9 +181,243 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/admin/agents', authenticateToken, async (req, res) => {
+  try {
+    if (req.auth.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden. Admin access is required.' });
+    }
+
+    const agents = await prisma.user.findMany({
+      where: { role: 'AGENT' },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    return res.json({ agents });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+
+    const conversation = await resolveConversationFromChatId(chatId);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: conversation.id },
+      select: {
+        id: true,
+        userId: true,
+      },
+    });
+
+    const canAccessTicket = ticket && (ticket.userId === req.auth.userId || ['ADMIN', 'AGENT'].includes(req.auth.role));
+
+    if (!canAccessTicket) {
+      const participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId: conversation.id,
+          userId: req.auth.userId,
+        },
+      });
+
+      if (!participant) {
+        return res.status(403).json({ error: 'You are not part of this conversation.' });
+      }
+    }
+
+    const messages = await prisma.message.findMany({
+      where: { conversationId: conversation.id },
+      orderBy: { sentAt: 'asc' },
+      select: {
+        id: true,
+        content: true,
+        sentAt: true,
+        isEdited: true,
+        senderId: true,
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return res.json({
+      conversation: {
+        id: conversation.id,
+        name: conversation.name,
+        isGroup: conversation.isGroup,
+      },
+      messages,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.post('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ error: 'Message content is required.' });
+    }
+
+    const conversation = await resolveConversationFromChatId(chatId);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: conversation.id },
+      select: {
+        id: true,
+        userId: true,
+      },
+    });
+
+    const canAccessTicket = ticket && (ticket.userId === req.auth.userId || ['ADMIN', 'AGENT'].includes(req.auth.role));
+
+    if (!canAccessTicket) {
+      const participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId: conversation.id,
+          userId: req.auth.userId,
+        },
+      });
+
+      if (!participant) {
+        return res.status(403).json({ error: 'You are not part of this conversation.' });
+      }
+    }
+
+    const message = await prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: req.auth.userId,
+        content: content.trim(),
+      },
+      select: {
+        id: true,
+        content: true,
+        sentAt: true,
+        isEdited: true,
+        senderId: true,
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: 'Message sent successfully.',
+      data: message,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.patch('/api/tickets/:ticketId/assign', authenticateToken, async (req, res) => {
+  try {
+    if (req.auth.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden. Admin access is required.' });
+    }
+
+    const { ticketId } = req.params;
+    const { agentId } = req.body;
+
+    if (!agentId) {
+      return res.status(400).json({ error: 'Agent ID is required.' });
+    }
+
+    const agent = await prisma.user.findFirst({
+      where: {
+        id: agentId,
+        role: 'AGENT',
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found.' });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found.' });
+    }
+
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        assignedTo: agent.id,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        assignedAgent: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return res.json({
+      message: 'Agent assigned successfully.',
+      ticket: updatedTicket,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
 app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
   try {
-    const [totalUsers, usersByRole, recentUsers] = await Promise.all([
+    const [totalUsers, usersByRole, recentUsers] = await runPrismaQueryWithReconnect(async () => Promise.all([
       prisma.user.count(),
       prisma.user.findMany({
         select: { role: true },
@@ -164,7 +433,7 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
           createdAt: true,
         },
       }),
-    ]);
+    ]));
 
     const roleCounts = usersByRole.reduce(
       (counts, user) => {
@@ -183,7 +452,7 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Something went wrong on the server.' });
+    return res.status(503).json({ error: 'Database connection is temporarily unavailable.' });
   }
 });
 
@@ -288,16 +557,28 @@ app.post('/api/tickets/create', authenticateToken, async (req, res) => {
     // Generate the custom ID!
     const customTicketId = generateTicketId();
     
-    // Create the ticket in the database
-    const ticket = await prisma.ticket.create({
-      data: {
-        id: customTicketId,
-        title,
-        description,
-        priority: priority || 'MEDIUM',
-        category: category || 'GENERAL',
-        userId: req.auth.userId,
-      },
+    // Create the ticket and its conversation together so every ticket has a chat thread.
+    const { ticket, conversation } = await prisma.$transaction(async (tx) => {
+      const createdTicket = await tx.ticket.create({
+        data: {
+          id: customTicketId,
+          title,
+          description,
+          priority: priority || 'MEDIUM',
+          category: category || 'GENERAL',
+          userId,
+        },
+      });
+
+      const createdConversation = await tx.conversation.create({
+        data: {
+          id: createdTicket.id,
+          name: title,
+          createdBy: userId,
+        },
+      });
+
+      return { ticket: createdTicket, conversation: createdConversation };
     });
 
     return res.status(201).json({
@@ -310,6 +591,7 @@ app.post('/api/tickets/create', authenticateToken, async (req, res) => {
         category: ticket.category,
         status: ticket.status,
         createdAt: ticket.createdAt,
+        conversationId: conversation.id,
       },
     });
   } catch (error) {
@@ -354,6 +636,14 @@ app.get('/api/tickets/:ticketId', authenticateToken, async (req, res) => {
       where: { id: ticketId },
       include: {
         user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        assignedAgent: {
           select: {
             id: true,
             name: true,
@@ -428,6 +718,10 @@ app.get('/api/reports/export', authenticateToken, async (req, res) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
+  await ensureTicketAssignmentSchema().catch((error) => {
+    console.error('Failed to repair ticket assignment schema.', error);
+  });
+
   app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT || 5000}`);
   });

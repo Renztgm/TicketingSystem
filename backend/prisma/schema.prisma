@@ -16,6 +16,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tickets   Ticket[]
+  assignedTickets Ticket[] @relation("TicketAssignedAgent")
+  conversationsCreated Conversation[] @relation("ConversationCreatedBy")
+  conversationParticipants ConversationParticipant[]
+  sentMessages Message[]
 
   @@map("users")
 }
@@ -29,10 +33,58 @@ model Ticket {
   status      Status   @default(OPEN)
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo  String?  @map("Assigned_to")
+  assignedAgent User?  @relation("TicketAssignedAgent", fields: [assignedTo], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("tickets")
+}
+
+model Conversation {
+  id        String   @id
+  name      String?
+  isGroup   Boolean  @default(false) @map("is_group")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  creator      User                     @relation("ConversationCreatedBy", fields: [createdBy], references: [id])
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversation")
+}
+
+model ConversationParticipant {
+  id             Int      @id @default(autoincrement())
+  conversationId String   @map("conversation_id")
+  userId         String   @map("user_id")
+  joinedAt       DateTime @default(now()) @map("joined_at")
+  isAdmin        Boolean  @default(false) @map("is_admin")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId String   @map("conversation_id")
+  senderId       String   @map("sender_id")
+  content        String
+  sentAt         DateTime @default(now()) @map("send_at")
+  isEdited       Boolean  @default(false) @map("is_edited")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("messages")
 }
 
 enum Role {

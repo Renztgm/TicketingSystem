@@ -6,6 +6,7 @@ import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
+const USER_KEY = 'ticketing_user';
 
 function formatDate(value) {
 	if (!value) {
@@ -20,8 +21,14 @@ function ViewTicket() {
 	const navigate = useNavigate();
 	const [ticketInput, setTicketInput] = useState(ticketId || '');
 	const [ticket, setTicket] = useState(null);
+	const [agents, setAgents] = useState([]);
+	const [selectedAgentId, setSelectedAgentId] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
+	const [successMessage, setSuccessMessage] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const [isAssigning, setIsAssigning] = useState(false);
+	const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+	const isAdmin = currentUser?.role === 'ADMIN';
 
 	useEffect(() => {
 		setTicketInput(ticketId || '');
@@ -59,6 +66,7 @@ function ViewTicket() {
 			}
 
 			setTicket(data.ticket);
+			setSelectedAgentId(data.ticket?.assignedAgent?.id || data.ticket?.assignedTo || '');
 		} catch (error) {
 			setTicket(null);
 			setErrorMessage(error.message || 'Could not load ticket details.');
@@ -72,6 +80,80 @@ function ViewTicket() {
 			loadTicket(ticketId);
 		}
 	}, [ticketId]);
+
+	useEffect(() => {
+		if (!isAdmin) {
+			return;
+		}
+
+		const loadAgents = async () => {
+			try {
+				const token = localStorage.getItem(TOKEN_KEY);
+
+				const response = await fetch(`${API_BASE_URL}/api/admin/agents`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+
+				const data = await response.json();
+
+				if (!response.ok) {
+					throw new Error(data.error || 'Failed to load agents.');
+				}
+
+				setAgents(data.agents || []);
+			} catch (error) {
+				setErrorMessage(error.message || 'Could not load agents.');
+			}
+		};
+
+		loadAgents();
+	}, [isAdmin]);
+
+	const handleAssignAgent = async (event) => {
+		event.preventDefault();
+
+		if (!ticket) {
+			setErrorMessage('Load a ticket before assigning an agent.');
+			return;
+		}
+
+		if (!selectedAgentId) {
+			setErrorMessage('Select an agent first.');
+			return;
+		}
+
+		try {
+			setIsAssigning(true);
+			setErrorMessage('');
+			setSuccessMessage('');
+
+			const token = localStorage.getItem(TOKEN_KEY);
+
+			const response = await fetch(`${API_BASE_URL}/api/tickets/${ticket.id}/assign`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ agentId: selectedAgentId }),
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Failed to assign agent.');
+			}
+
+			setTicket(data.ticket);
+			setSuccessMessage('Agent assigned successfully.');
+		} catch (error) {
+			setErrorMessage(error.message || 'Could not assign agent.');
+		} finally {
+			setIsAssigning(false);
+		}
+	};
 
 	const statusStyles = useMemo(() => ({
 		OPEN: { backgroundColor: '#e8f5e9', color: '#2e7d32' },
@@ -117,6 +199,12 @@ function ViewTicket() {
 					</div>
 
 					<div style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
+						<p style={{ margin: '0 0 6px 0', color: '#6b7280', fontSize: '13px' }}>Assigned Agent</p>
+						<p style={{ margin: 0, fontWeight: 600 }}>{ticket.assignedAgent?.name || ticket.assignedAgent?.email || 'Unassigned'}</p>
+						<p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '13px' }}>{ticket.assignedAgent?.email || '-'}</p>
+					</div>
+
+					<div style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
 						<p style={{ margin: '0 0 6px 0', color: '#6b7280', fontSize: '13px' }}>Created</p>
 						<p style={{ margin: 0, fontWeight: 600 }}>{formatDate(ticket.createdAt)}</p>
 					</div>
@@ -131,6 +219,51 @@ function ViewTicket() {
 					<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</p>
 					<p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ticket.description}</p>
 				</div>
+
+				{isAdmin && (
+					<div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
+						<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assign Agent</p>
+						<form onSubmit={handleAssignAgent} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'end' }}>
+							<div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+								<label htmlFor="agentId" style={{ fontWeight: 600 }}>Select Agent</label>
+								<select
+									id="agentId"
+									value={selectedAgentId}
+									onChange={(e) => setSelectedAgentId(e.target.value)}
+									style={{
+										padding: '10px 12px',
+										borderRadius: '6px',
+										border: '1px solid var(--border-color)',
+										fontSize: '14px',
+									}}
+								>
+									<option value="">Choose an agent</option>
+									{agents.map((agent) => (
+										<option key={agent.id} value={agent.id}>
+											{agent.name || agent.email}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<button
+								type="submit"
+								disabled={isAssigning}
+								style={{
+									padding: '10px 18px',
+									border: 'none',
+									borderRadius: '6px',
+									backgroundColor: isAssigning ? '#9ca3af' : 'var(--primary-color)',
+									color: '#fff',
+									fontWeight: 600,
+									cursor: isAssigning ? 'not-allowed' : 'pointer',
+								}}
+							>
+								{isAssigning ? 'Assigning...' : 'Assign Agent'}
+							</button>
+						</form>
+					</div>
+				)}
 			</div>
 		);
 	};
