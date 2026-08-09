@@ -10,6 +10,7 @@ import HistoryTicket from "./pages/HistoryTicket.jsx"
 import CreateAccount from "./pages/CreateAccount.jsx"
 import GenerateReport from "./pages/GenerateReport.jsx"
 import ChatsPage from "./pages/ChatsPage.jsx"
+import TicketDetails from "./pages/TicketDetails.jsx"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
@@ -71,6 +72,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/create-ticket" element={<CreateTicket />} />
           <Route path="/view-ticket" element={<ViewTicket />} />
+          <Route path="/tickets/:ticketId" element={<TicketDetails />} />
           <Route path="/view-ticket/:ticketId" element={<ViewTicket />} />
           <Route path="/view-history" element={<HistoryTicket />} />
           <Route path="/generate-report" element={<GenerateReport />} />  

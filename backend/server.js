@@ -84,12 +84,6 @@ async function runPrismaQueryWithReconnect(queryFn) {
   }
 }
 
-async function ensureTicketAssignmentSchema() {
-  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "Assigned_to" TEXT');
-  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" DROP CONSTRAINT IF EXISTS "tickets_Assigned_to_fkey"');
-  await prisma.$executeRawUnsafe('ALTER TABLE "tickets" ADD CONSTRAINT "tickets_Assigned_to_fkey" FOREIGN KEY ("Assigned_to") REFERENCES "users"("id") ON DELETE SET NULL NOT VALID');
-}
-
 // Example output: TKT-20260707-8F4B2A9C1E
 
 async function resolveConversationFromChatId(chatId) {
@@ -150,6 +144,42 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
         role: user.role,
       },
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server. (Error: 500)' });
+  }
+});
+
+
+app.get('/api/tickets', authenticateToken, async (req, res) => {
+  try {
+    const { status } = req.query; // e.g. ?status=OPEN
+    const isStaff = ['ADMIN', 'AGENT'].includes(req.auth.role);
+ 
+    const where = {};
+ 
+    // Default to open tickets if no status filter is passed
+    where.status = status || 'OPEN';
+ 
+    // Regular users only see their own tickets; staff see everyone's
+    if (!isStaff) {
+      where.userId = req.auth.userId;
+    }
+ 
+    const tickets = await prisma.ticket.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+        assignedAgent: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+ 
+    return res.json({ tickets });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Something went wrong on the server.' });
@@ -411,7 +441,7 @@ app.patch('/api/tickets/:ticketId/assign', authenticateToken, async (req, res) =
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Something went wrong on the server.' });
+    return res.status(500).json({ error: 'Something went wrong on the server. (Error: 500)' });
   }
 });
 
@@ -452,7 +482,7 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(503).json({ error: 'Database connection is temporarily unavailable.' });
+    return res.status(503).json({ error: 'Database connection is temporarily unavailable. (Error: 503)' });
   }
 });
 
@@ -602,13 +632,10 @@ app.post('/api/tickets/create', authenticateToken, async (req, res) => {
 
 app.get('/api/tickets/history', authenticateToken, async (req, res) => {
   try {
+    const isStaff = ['ADMIN', 'AGENT'].includes(req.auth.role);
     const tickets = await prisma.ticket.findMany({
-      where: {
-        userId: req.auth.userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: isStaff ? {} : { userId: req.auth.userId },
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         title: true,
@@ -668,7 +695,7 @@ app.get('/api/tickets/:ticketId', authenticateToken, async (req, res) => {
     return res.json({ ticket });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Something went wrong on the server(error TK1004).' });
+    return res.status(500).json({ error: 'Something went wrong on the server (Error: 500).' });
   }
 });
 
@@ -718,9 +745,6 @@ app.get('/api/reports/export', authenticateToken, async (req, res) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-  await ensureTicketAssignmentSchema().catch((error) => {
-    console.error('Failed to repair ticket assignment schema.', error);
-  });
 
   app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT || 5000}`);

@@ -18,49 +18,58 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
                 </p>
             </div>
 
+
+
             {isLoading && (
-                <div style={{ padding: '16px 18px', color: '#6b7280' }}>Fetching conversation...</div>
+                <div className='pulse'>
+                    <div className='loading-box' style={{height: '50px'}}></div>
+                    <div className='loading-box' style={{height: '50px'}}></div>
+                    <div className='loading-box' style={{height: '50px'}}></div>
+                    <div className='loading-box' style={{height: '50px'}}></div>
+                    <div className='loading-box' style={{height: '50px'}}></div>
+                </div>
             )}
 
             {!isLoading && messages.length === 0 && (
                 <div style={{ padding: '16px 18px', color: '#6b7280' }}>No messages yet in this ticket conversation.</div>
             )}
 
-            {messages.map((message) => (
-                <div key={message.id} className="chat-container">
-                    <div className="message-header">
-                        <div className="sender-name">{message.sender?.name || message.sender?.email || 'Unknown sender'}</div>
-                        <div className="timestamp">{formatTimestamp(message.sentAt)}</div>
+            <div className='chat-message-item'>
+                {messages.map((message) => (
+                    <div key={message.id} className="chat-container">
+                        <div className="message-header">
+                            <div className="sender-name">{message.sender?.name || message.sender?.email || 'Unknown sender'}</div>
+                            <div className="timestamp">{formatTimestamp(message.sentAt)}</div>
+                        </div>
+                        <div className="message-content">
+                            {message.content}
+                        </div>
                     </div>
-                    <div className="message-content">
-                        {message.content}
-                    </div>
-                </div>
-            ))}
+                ))}
+            </div>
+
 
             <form
                 onSubmit={onSendMessage}
                 style={{
-                    marginTop: '16px',
                     padding: '16px 18px',
                     borderTop: '1px solid var(--border-color)',
-                    display: 'grid',
+                    display: 'flex',
                     gap: '10px',
                 }}
             >
-                <label htmlFor="messageContent" style={{ fontWeight: 600 }}>New Message</label>
                 <textarea
                     id="messageContent"
                     value={messageText}
                     onChange={(event) => onMessageTextChange(event.target.value)}
                     placeholder="Type your message..."
-                    rows="4"
+                    rows="1"
                     style={{
                         width: '100%',
                         padding: '12px',
                         borderRadius: '8px',
                         border: '1px solid var(--border-color)',
-                        resize: 'vertical',
+                        resize: 'none',
                         fontFamily: 'inherit',
                     }}
                 />
