@@ -1,4 +1,5 @@
 import React from 'react';
+import {useEffect, useRef} from 'react';
 
 function ChatMessages({ messages, currentUser, chatName, isLoading, messageText, onMessageTextChange, onSendMessage, isSending }) {
     const formatTimestamp = (timestamp) => {
@@ -8,6 +9,13 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
     const isCurrentUser = (userId) => {
         return currentUser && currentUser.id === userId;
     }
+    const bottomRef = useRef(null);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    },[messages]);
+
+
 
     return (
         <div className="chat-messages">
@@ -36,7 +44,7 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
 
             <div className='chat-message-item'>
                 {messages.map((message) => (
-                    <div key={message.id} className="chat-container">
+                    <div key={message.id} className={`chat-bubble ${message.sender?.id === currentUser?.id ? 'sent' : 'received'}`}>
                         <div className="message-header">
                             <div className="sender-name">{message.sender?.name || message.sender?.email || 'Unknown sender'}</div>
                             <div className="timestamp">{formatTimestamp(message.sentAt)}</div>
@@ -46,6 +54,8 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
                         </div>
                     </div>
                 ))}
+                {}
+                <div ref={bottomRef} />
             </div>
 
 

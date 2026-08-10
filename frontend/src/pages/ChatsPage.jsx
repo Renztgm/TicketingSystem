@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/NavBarComponent';
 import ChatMessages from '../components/ChatMessages';
 import ChatList from '../components/ChatList';
@@ -17,20 +17,20 @@ function ChatsPage() {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSendingMessage, setIsSendingMessage] = useState(false);
 
-    const loadMessages = async (chatId) => {
+    const pendingIdsRef = useRef(new Set());
+
+    const loadMessages = async (chatId, { silent = false } = {}) => {
         if (!chatId) {
             setMessages([]);
             return;
         }
 
         try {
-            setIsLoadingMessages(true);
+            if (!silent) setIsLoadingMessages(true);
             const token = localStorage.getItem(TOKEN_KEY);
 
             const response = await fetch(`${API_BASE_URL}/api/chats/messages/${chatId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
 
             const data = await response.json();
@@ -39,15 +39,21 @@ function ChatsPage() {
                 throw new Error(data.error || 'Failed to load messages.');
             }
 
-            setMessages(Array.isArray(data.messages) ? data.messages : []);
+            const serverMessages = Array.isArray(data.messages) ? data.messages : [];
+            setMessages((prev) => {
+                const stillPending = prev.filter((m) => pendingIdsRef.current.has(m.id));
+                return [...serverMessages, ...stillPending];
+            });
         } catch (error) {
-            setMessages([]);
-            setErrorMessage(error.message || 'Could not load messages.');
+            if (!silent) {
+                setMessages([]);
+                setErrorMessage(error.message || 'Could not load messages.');
+            }
         } finally {
-            setIsLoadingMessages(false);
+            if (!silent) setIsLoadingMessages(false);
         }
     };
-    
+
     useEffect(() => {
         const loadProfile = async () => {
             try {
@@ -144,10 +150,25 @@ function ChatsPage() {
             return;
         }
 
+        const contentToSend = messageText;
+        const tempId = `temp-${Date.now()}`;
+
+        const tempMessage = {
+            id: tempId,
+            content: contentToSend,
+            sender: profile,
+            sentAt: new Date().toISOString(),
+            pending: true,
+        };
+
+        // Show it instantly + mark as pending so polling won't erase it
+        pendingIdsRef.current.add(tempId);
+        setMessages((prev) => [...prev, tempMessage]);
+        setMessageText('');
+        setErrorMessage('');
+
         try {
             setIsSendingMessage(true);
-            setErrorMessage('');
-
             const token = localStorage.getItem(TOKEN_KEY);
 
             const response = await fetch(`${API_BASE_URL}/api/chats/messages/${selectedChat.id}`, {
@@ -156,7 +177,7 @@ function ChatsPage() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ content: messageText }),
+                body: JSON.stringify({ content: contentToSend }),
             });
 
             const data = await response.json();
@@ -165,14 +186,38 @@ function ChatsPage() {
                 throw new Error(data.error || 'Failed to send message.');
             }
 
-            setMessageText('');
-            await loadMessages(selectedChat.id);
+            const savedMessage = data.data;
+            
+            pendingIdsRef.current.delete(tempId);
+            if (savedMessage) {
+                setMessages((prev) =>
+                    prev.map((m) => (m.id === tempId ? data.data : m))
+                );
+            } 
+            else {
+                setMessages((prev) => prev.filter((m) => m.id !== tempId)
+            );
+            }
+
         } catch (error) {
+            pendingIdsRef.current.delete(tempId);
+            setMessages((prev) => prev.filter((m) => m.id !== tempId));
             setErrorMessage(error.message || 'Could not send the message.');
         } finally {
             setIsSendingMessage(false);
         }
     };
+
+    useEffect(() => {
+        if (!selectedChat) {
+            return;
+        }
+
+        const interval = setInterval(() => {
+            loadMessages(selectedChat.id, { silent: true });
+        }, 4000);
+        return () => clearInterval(interval);
+    }, [selectedChat]);
 
     if (errorMessage) {
         return <div className="loading-spinner"><p>{errorMessage}</p></div>;

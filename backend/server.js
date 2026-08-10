@@ -299,6 +299,7 @@ app.get('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: 'Something went wrong on the server.' });
   }
+  
 });
 
 app.post('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {

@@ -28,7 +28,7 @@ function ChatList({ chats, currentUser, onSelectChat, selectedChatId, isLoading 
                     className="chat-item"
                     style={{
                         cursor: 'pointer',
-                        backgroundColor: chat.id === selectedChatId ? '#eef2ff' : 'transparent',
+                        backgroundColor: chat.id === selectedChatId ? '#EAF3DE' : 'transparent',
                         borderLeft: chat.id === selectedChatId ? '3px solid var(--primary-color)' : '3px solid transparent',
                     }}
                 >
