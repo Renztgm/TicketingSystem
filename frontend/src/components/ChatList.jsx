@@ -20,8 +20,8 @@ function ChatList({ chats, currentUser, onSelectChat, selectedChatId, isLoading 
                     No tickets with chat threads yet.
                 </div>
             )}
-
-            {chats.map((chat) => (
+            <div style={{ maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}>
+                            {chats.map((chat) => (
                 <div
                     key={chat.id}
                     onClick={() => handleChatClick(chat)}
@@ -42,6 +42,8 @@ function ChatList({ chats, currentUser, onSelectChat, selectedChatId, isLoading 
                     
                 </div>
             ))}
+            </div>
+
         </div>
     );
 }

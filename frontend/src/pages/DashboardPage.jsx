@@ -63,10 +63,11 @@ function DashboardPage() {
     return (
         <div className="dashboard-wrapper">
             <nav>
-                <Navbar />
+                <NavBarVerticalComponent />
+                
             </nav>
             <div className="dashboard-container">
-                <NavBarVerticalComponent />
+                <Navbar />
                 <div className="dashboard-content">
                     <div className="dashboard-header">
                         <h1>Dashboard</h1>

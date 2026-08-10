@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/styles.css';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,26 @@ function LoginPage() {
 
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('ticketing_token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+                if (!isExpired) {
+                    navigate('/dashboard', { replace: true });
+                } else {
+                    localStorage.removeItem('ticketing_token');
+                    localStorage.removeItem('ticketing_user');
+                }
+            } catch {
+                // Malformed token — clear it and stay on login
+                localStorage.removeItem('ticketing_token');
+                localStorage.removeItem('ticketing_user');
+            }
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -1,5 +1,4 @@
-import React from 'react';
-import {useEffect, useRef} from 'react';
+    import React, { useEffect, useRef, useMemo } from 'react';
 
 function ChatMessages({ messages, currentUser, chatName, isLoading, messageText, onMessageTextChange, onSendMessage, isSending }) {
     const formatTimestamp = (timestamp) => {
@@ -11,11 +10,26 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
     }
     const bottomRef = useRef(null);
 
+    const uniqueMessages = useMemo(() => {
+    
+    const map = new Map();
+        for (const m of messages) {
+            map.set(m.id, m);
+        }
+        return Array.from(map.values());
+    }, [messages]);
+
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    },[messages]);
+    },[uniqueMessages]);
 
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            event.currentTarget.form?.requestSubmit();
+        }
+    };
 
     return (
         <div className="chat-messages">
@@ -43,7 +57,7 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
             )}
 
             <div className='chat-message-item'>
-                {messages.map((message) => (
+                {uniqueMessages.map((message) => (
                     <div key={message.id} className={`chat-bubble ${message.sender?.id === currentUser?.id ? 'sent' : 'received'}`}>
                         <div className="message-header">
                             <div className="sender-name">{message.sender?.name || message.sender?.email || 'Unknown sender'}</div>
@@ -72,6 +86,7 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
                     id="messageContent"
                     value={messageText}
                     onChange={(event) => onMessageTextChange(event.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
                     rows="1"
                     style={{

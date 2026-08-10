@@ -7,12 +7,51 @@ import { PrismaClient } from '@prisma/client';
 import rateLimit from 'express-rate-limit';
 import { parse } from 'json2csv';
 import crypto from 'crypto';
+import http from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const prisma = new PrismaClient();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: '*' || 'http://localhost:5173' || process.env.CLIENT_URL, 
+    credentials: true,
+    // methods: ['GET', 'POST', 'PATCH'],
+  },
+});
+
+app.set('io', io);
+
+io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Authentication required'));
+
+    try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        socket.userId = payload.userId; // adjust field name to match your token payload
+        next();
+    } catch (err) {
+        next(new Error('Invalid token'));
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('🔌 client connected:', socket.id, 'userId:', socket.userId);
+
+    socket.on('joinChat', (chatId) => {
+        console.log('➡️  joining room:', chatId);
+        socket.join(chatId);
+    });
+
+    socket.on('leaveChat', (chatId) => {
+        socket.leave(chatId);
+    });
+});
 
 app.set('trust proxy', 1);
 
@@ -362,6 +401,12 @@ app.post('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {
         },
       },
     });
+
+
+    const io = req.app.get('io');
+    console.log('📤 emitting newMessage to room:', chatId);
+    
+    io.to(chatId).emit('newMessage', message);
 
     return res.status(201).json({
       message: 'Message sent successfully.',
@@ -746,10 +791,12 @@ app.get('/api/reports/export', authenticateToken, async (req, res) => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-
-  app.listen(process.env.PORT || 5000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 5000}`);
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
+
 }
+
+
 
 export default app;

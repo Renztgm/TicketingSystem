@@ -544,7 +544,10 @@ a {
 }
 
 .dashboard-header {
-    margin-bottom: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
 .dashboard-header h1 {
@@ -665,6 +668,9 @@ a {
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
+    align-items: center;
+    text-decoration: none;
+    justify-content: center;
     transition: all 0.3s ease;
     font-size: 14px;
 }
