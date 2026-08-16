@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../css/styles.css';
 import Navbar from '../components/NavBarComponent';
+import VerticalNavbar from '../components/NavBarVerticalComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
@@ -44,16 +45,17 @@ function ProfilePage() {
     }
 
     return (
-        <div className='profile-page'>
-            <nav>
-                <Navbar />
-            </nav>
-            <div className="profile-content">
-                <h1>Profile</h1>
-                <p>Name: {profile.name || 'No name set'}</p>
-                <p>Email: {profile.email}</p>
-                <p>Role: {profile.role}</p>
-                <p>Joined: {new Date(profile.createdAt).toLocaleString()}</p>
+        <div className="dashboard-wrapper">
+            <VerticalNavbar />
+            <div className='dashboard-container'>
+                <Navbar/>
+                <div className="profile-content">
+                    <h1>Profile</h1>
+                    <p>Name: {profile.name || 'No name set'}</p>
+                    <p>Email: {profile.email}</p>
+                    <p>Role: {profile.role}</p>
+                    <p>Joined: {new Date(profile.createdAt).toLocaleString()}</p>
+                </div>
             </div>
         </div>
     );

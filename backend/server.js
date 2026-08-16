@@ -493,21 +493,32 @@ app.patch('/api/tickets/:ticketId/assign', authenticateToken, async (req, res) =
 
 app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
   try {
-    const [totalUsers, usersByRole, recentUsers] = await runPrismaQueryWithReconnect(async () => Promise.all([
+    const [totalUsers, usersByRole, recentUsers, totalTickets, ticketsByStatus, assignedTo] = await runPrismaQueryWithReconnect(async () => Promise.all([
       prisma.user.count(),
       prisma.user.findMany({
         select: { role: true },
       }),
       prisma.user.findMany({
         orderBy: { createdAt: 'desc' },
-        take: 5,
+        take: 6,
         select: {
           id: true,
           name: true,
           email: true,
           role: true,
           createdAt: true,
+          assignedTickets: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+            },
+          },
         },
+      }),
+      prisma.ticket.count(),
+      prisma.ticket.findMany({
+        select: { status: true },
       }),
     ]));
 
@@ -519,10 +530,31 @@ app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
       { USER: 0, AGENT: 0, ADMIN: 0 }
     );
 
+    const statusCounts = ticketsByStatus.reduce((counts, ticket) => {
+      counts[ticket.status] = (counts[ticket.status] || 0) + 1;
+      return counts;
+    }, {});
+
+    const assignedTicketsCount = await prisma.ticket.count({
+      where: {
+        assignedTo: { not: null },
+      },
+    });
+
+    const unassignedTicketsCount = await prisma.ticket.count({
+      where: {
+        assignedTo: null,
+      },
+    });
+
     return res.json({
       summary: {
         totalUsers,
         roleCounts,
+        totalTickets,
+        statusCounts,
+        assignedTicketsCount,
+        unassignedTicketsCount,
       },
       recentUsers,
     });

@@ -1,4 +1,5 @@
-    import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
+import SendIcon from '../assets/send.svg';
 
 function ChatMessages({ messages, currentUser, chatName, isLoading, messageText, onMessageTextChange, onSendMessage, isSending }) {
     const formatTimestamp = (timestamp) => {
@@ -35,20 +36,18 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
         <div className="chat-messages">
             <div style={{ padding: '8px 6px', borderBottom: '1px solid var(--border-color)' }}>
                 <h2 style={{ margin: 0 }}>{chatName || 'Select a chat'}</h2>
-                <p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '13px' }}>
+                {/* <p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '13px' }}>
                     {isLoading ? 'Loading messages...' : `${messages.length} message${messages.length === 1 ? '' : 's'}`}
-                </p>
+                </p> */}
             </div>
 
 
 
             {isLoading && (
-                <div className='pulse'>
-                    <div className='loading-box' style={{height: '50px'}}></div>
-                    <div className='loading-box' style={{height: '50px'}}></div>
-                    <div className='loading-box' style={{height: '50px'}}></div>
-                    <div className='loading-box' style={{height: '50px'}}></div>
-                    <div className='loading-box' style={{height: '50px'}}></div>
+                <div className='boxLoad loading-container'>
+                    <div className='boxLoad1'></div>
+                    <div className='boxLoad2'></div>
+                    <div className='boxLoad3'></div>
                 </div>
             )}
 
@@ -106,13 +105,19 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
                             padding: '10px 16px',
                             border: 'none',
                             borderRadius: '8px',
-                            backgroundColor: isLoading || isSending || !chatName ? '#9ca3af' : 'var(--primary-color)',
-                            color: '#fff',
+                            // backgroundColor: isLoading || isSending || !chatName ? '#9ca3af00' : 'var(--primary-color)',
+                            // color: '#fff',
                             fontWeight: 600,
                             cursor: isLoading || isSending || !chatName ? 'not-allowed' : 'pointer',
                         }}
                     >
-                        {isSending ? 'Sending...' : 'Send Message'}
+                        {(() => {
+                            if (isSending) {
+                                return <img src={SendIcon} alt="Send" style={{ width: '16px', height: '16px', opacity: '0.5' }} />;
+                            } else {
+                                return <img src={SendIcon} alt="Send" style={{ width: '16px', height: '16px' }} />;
+                            }
+                        })()}
                     </button>
                 </div>
             </form>

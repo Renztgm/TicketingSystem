@@ -78,13 +78,9 @@ function HistoryTicket() {
 
 	return (
 		<div className="dashboard-wrapper">
-			<nav>
-				<Navbar />
-			</nav>
+			<NavBarVerticalComponent />
 			<div className="dashboard-container">
-				<div className="navbarvertical">
-					<NavBarVerticalComponent />
-				</div>
+				<Navbar />
 				<div className="dashboard-content">
 					<div className="dashboard-header">
 						<h1>Ticket History</h1>
@@ -171,7 +167,7 @@ function HistoryTicket() {
 												<td style={{ padding: '12px 10px' }}>{formatDate(ticket.updatedAt)}</td>
 												<td style={{ padding: '12px 10px' }}>
 													<Link
-														to={`/view-ticket/${ticket.id}`}
+														to={`/tickets/${ticket.id}`}
 														style={{
 															color: 'var(--primary-color)',
 															fontWeight: 600,

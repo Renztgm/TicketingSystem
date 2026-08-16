@@ -4,6 +4,7 @@ import Navbar from '../components/NavBarComponent';
 import ChatMessages from '../components/ChatMessages';
 import ChatList from '../components/ChatList';
 import { getSocket } from '../lib/socket'; 
+import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
@@ -241,31 +242,41 @@ useEffect(() => {
         return <div className="loading-spinner"><p>{errorMessage}</p></div>;
     }
     if (!profile) {
-        return <div className="loading-spinner"><p>Loading Chats...</p></div>;
+        return <div className="loading-spinner">
+            <div className="loading-container">
+                <div className="boxLoad1"></div>
+                <div className="boxLoad2"></div>
+                <div className="boxLoad3"></div>
+            </div>
+        </div>;
     }
 
     return (
         <div className="dashboard-wrapper">
-            <nav><Navbar /></nav>
-            <div className="chats-wrapper">
-                <ChatList
-                    chats={chats}
-                    currentUser={profile}
-                    selectedChatId={selectedChat?.id}
-                    onSelectChat={handleSelectChat}
-                    isLoading={isLoadingChats}
-                />
-                <ChatMessages
-                    messages={messages}
-                    currentUser={profile}
-                    chatName={selectedChat?.name}
-                    isLoading={isLoadingMessages}
-                    messageText={messageText}
-                    onMessageTextChange={setMessageText}
-                    onSendMessage={handleSendMessage}
-                    isSending={isSendingMessage}
-                />
+            <NavBarVerticalComponent />
+            <div className="dashboard-container">
+                <Navbar />
+                <div className="chats-wrapper">
+                    <ChatList
+                        chats={chats}
+                        currentUser={profile}
+                        selectedChatId={selectedChat?.id}
+                        onSelectChat={handleSelectChat}
+                        isLoading={isLoadingChats}
+                    />
+                    <ChatMessages
+                        messages={messages}
+                        currentUser={profile}
+                        chatName={selectedChat?.name}
+                        isLoading={isLoadingMessages}
+                        messageText={messageText}
+                        onMessageTextChange={setMessageText}
+                        onSendMessage={handleSendMessage}
+                        isSending={isSendingMessage}
+                    />
+                </div>
             </div>
+
         </div>
     );
 }

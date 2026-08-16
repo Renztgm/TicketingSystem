@@ -47,7 +47,13 @@ function DashboardPage() {
     }
 
     if (!summary) {
-        return <div className="loading-spinner"><p>Loading dashboard...</p></div>;
+        return <div className="loading-spinner">
+            <div className="loading-container">
+                <div className="boxLoad1"></div>
+                <div className="boxLoad2"></div>
+                <div className="boxLoad3"></div>
+            </div>
+        </div>;
     }
 
     if (user?.role === 'ADMIN') {
@@ -64,7 +70,6 @@ function DashboardPage() {
         <div className="dashboard-wrapper">
             <nav>
                 <NavBarVerticalComponent />
-                
             </nav>
             <div className="dashboard-container">
                 <Navbar />

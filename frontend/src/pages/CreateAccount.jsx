@@ -135,13 +135,9 @@ function CreateAccount() {
 
 	return (
 		<div className="dashboard-wrapper">
-			<nav>
-				<Navbar />
-			</nav>
+			<NavBarVerticalComponent />
 			<div className="dashboard-container">
-				<div className="navbarvertical">
-					<NavBarVerticalComponent />
-				</div>
+				<Navbar />
 				<div className="dashboard-content">
 					<div className="container">
 						<h1>Create New Account</h1>

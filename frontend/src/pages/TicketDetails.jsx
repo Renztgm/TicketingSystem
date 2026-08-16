@@ -154,13 +154,9 @@ function TicketDetails() {
 
 	return (
 		<div className="dashboard-wrapper">
-			<nav>
-				<Navbar />
-			</nav>
+				<NavBarVerticalComponent />
 			<div className="dashboard-container">
-				<div className="navbarvertical">
-					<NavBarVerticalComponent />
-				</div>
+				<Navbar />
 				<div className="dashboard-content">
 					<div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
 						{/* <div>
@@ -189,16 +185,17 @@ function TicketDetails() {
 							<div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', alignItems: 'start' }}>
 								<div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <Link 
-                                            to="/view-ticket"
+                                        <div 
+                                            onClick={() => navigate(-1)}
                                             style={{
                                                 padding: '5px 10px',
                                                 borderRadius: '6px',
                                                 width: 'fit-content',
+												cursor: 'pointer',
                                             }}
                                         >
                                             <img src={Back_Button} alt="Back" style={{ width: '30px', height: '30px' }} />
-                                        </Link >
+                                        </div >
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>    
                                             <h2 style={{ margin: 0 }}>{ticket.title}</h2>
                                             <p style={{ margin: '0', color: '#6b7280' }}>ID: {ticket.id}</p>
@@ -219,7 +216,7 @@ function TicketDetails() {
 								</div>
 							</div>
 
-							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginTop: '24px' }}>
+							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '16px', marginTop: '24px' }}>
 								<div style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
 									<p style={{ margin: '0 0 6px 0', color: '#6b7280', fontSize: '13px' }}>Owner</p>
 									<p style={{ margin: 0, fontWeight: 600 }}>{ticket.user?.name || ticket.user?.email || 'Unknown user'}</p>
@@ -247,56 +244,65 @@ function TicketDetails() {
 								<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</p>
 								<p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ticket.description}</p>
 							</div>
-
-                            <div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
-                                <p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conversation</p>
-                                <Link to={`/chats`}>View Conversation</Link>
-                            </div>
-
-							{isAdmin && (
+							
+							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '16px', marginTop: '24px' }}>
 								<div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
-									<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assign Agent</p>
-									<form onSubmit={handleAssignAgent} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'end' }}>
-										<div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-											<label htmlFor="agentId" style={{ fontWeight: 600 }}>Select Agent</label>
-											<select
-												id="agentId"
-												value={selectedAgentId}
-												onChange={(e) => setSelectedAgentId(e.target.value)}
+									<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conversation</p>
+									<Link to={`/chats/${ticket.id}`} style={{textDecoration: 'none'}}>
+										View Conversation
+									</Link>
+								</div>
+								<div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
+									<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Activity Logs</p>
+									<Link to={`#`} disabled={true} style={{ color: '#9ca3af', cursor: 'not-allowed', textDecoration: 'none' }}>
+										Activity Logs
+									</Link>
+								</div>
+								{isAdmin && (
+									<div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
+										<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assign Agent</p>
+										<form onSubmit={handleAssignAgent} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'end' }}>
+											<div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+												<label htmlFor="agentId" style={{ fontWeight: 600 }}>Select Agent</label>
+												<select
+													id="agentId"
+													value={selectedAgentId}
+													onChange={(e) => setSelectedAgentId(e.target.value)}
+													style={{
+														padding: '10px 12px',
+														borderRadius: '6px',
+														border: '1px solid var(--border-color)',
+														fontSize: '14px',
+													}}
+												>
+													<option value="">Choose an agent</option>
+													{agents.map((agent) => (
+														<option key={agent.id} value={agent.id}>
+															{agent.name || agent.email}
+														</option>
+													))}
+												</select>
+											</div>
+
+											<button
+												type="submit"
+												disabled={isAssigning}
 												style={{
-													padding: '10px 12px',
+													padding: '10px 18px',
+													border: 'none',
 													borderRadius: '6px',
-													border: '1px solid var(--border-color)',
-													fontSize: '14px',
+													backgroundColor: isAssigning ? '#9ca3af' : 'var(--primary-color)',
+													color: '#fff',
+													fontWeight: 600,
+													cursor: isAssigning ? 'not-allowed' : 'pointer',
 												}}
 											>
-												<option value="">Choose an agent</option>
-												{agents.map((agent) => (
-													<option key={agent.id} value={agent.id}>
-														{agent.name || agent.email}
-													</option>
-												))}
-											</select>
-										</div>
-
-										<button
-											type="submit"
-											disabled={isAssigning}
-											style={{
-												padding: '10px 18px',
-												border: 'none',
-												borderRadius: '6px',
-												backgroundColor: isAssigning ? '#9ca3af' : 'var(--primary-color)',
-												color: '#fff',
-												fontWeight: 600,
-												cursor: isAssigning ? 'not-allowed' : 'pointer',
-											}}
-										>
-											{isAssigning ? 'Assigning...' : 'Assign Agent'}
-										</button>
-									</form>
-								</div>
-							)}
+												{isAssigning ? 'Assigning...' : 'Assign Agent'}
+											</button>
+										</form>
+									</div>
+								)}
+							</div>
 						</div>
 					)}
 				</div>

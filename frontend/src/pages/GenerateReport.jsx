@@ -67,13 +67,9 @@ function GenerateReport() {
 
     return (
         <div className="dashboard-wrapper">
-            <nav>
-                <Navbar />
-            </nav>
+                <NavBarVerticalComponent />
             <div className="dashboard-container">
-                <div className="navbarvertical">
-                    <NavBarVerticalComponent />
-                </div>
+                <Navbar />  
                 <div className="dashboard-content">
                     <div className="dashboard-header">
                         <h1>Generate Reports</h1>

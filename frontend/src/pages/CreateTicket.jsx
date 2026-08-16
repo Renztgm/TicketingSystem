@@ -93,13 +93,9 @@ function CreateTicket() {
 
     return (
         <div className="dashboard-wrapper">
-            <nav>
-                <Navbar />
-            </nav>
+            <NavBarVerticalComponent />
             <div className="dashboard-container">
-                <div className="navbarvertical">
-                    <NavBarVerticalComponent />
-                </div>
+                <Navbar />
                 <div className="dashboard-content">
                     <h1>Create New Ticket</h1>
 

@@ -6,51 +6,66 @@ import NavBarVerticalComponent from './NavBarVerticalComponent';
 function Admin({summary}) {
     return (
         <div className="dashboard-wrapper">
-            <nav>
-                <Navbar />
-            </nav>
+            <NavBarVerticalComponent />
             <div className="dashboard-container">
-                <NavBarVerticalComponent />
+                <Navbar />
                 <div className="dashboard-content">
-                    <div className="dashboard-header">
+                    {/* <div className="dashboard-header">
                         <h1>Dashboard</h1>
                         <p>Welcome back! Here's a live overview from the backend.</p>
-                    </div>
+                    </div> */}
 
                     <div className="dashboard-grid">
-                        <div className="card success">
+                        <div className="card">
                             <div className="card-header">
-                                <p className="card-title">Total Users</p>
-                                <span className="card-icon">👤</span>
+                                <p className="card-title">Total Tickets</p>
+                                {/* <span className="card-icon"></span> */}
                             </div>
-                            <div className="card-value">{summary.summary.totalUsers}</div>
+                            <div className="card-value">{summary.summary.totalTickets}</div>
+                            {console.log('Summary data:', summary)}
                             <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>From the database</p>
                         </div>
 
-                        <div className="card warning">
+                        <div className="card">
                             <div className="card-header">
-                                <p className="card-title">Admins</p>
-                                <span className="card-icon">★</span>
+                                <p className="card-title">Open Tickets</p>
+                                {/* <span className="card-icon">★</span>    */}
                             </div>
-                            <div className="card-value">{summary.summary.roleCounts.ADMIN}</div>
+                            <div className="card-value">{summary.summary.statusCounts.OPEN}</div>
                             <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>Backend-authenticated users</p>
                         </div>
 
-                        <div className="card danger">
+                        <div className="card">
                             <div className="card-header">
-                                <p className="card-title">Agents</p>
-                                <span className="card-icon">⌁</span>
+                                <p className="card-title">Pending</p>
+                                {/* <span className="card-icon">⌁</span> */}
                             </div>
-                            <div className="card-value">{summary.summary.roleCounts.AGENT}</div>
+                            <div className="card-value">{summary.summary.statusCounts.PENDING || 0}</div>
                             <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>Backend-authenticated users</p>
                         </div>
 
-                        <div className="card secondary">
+                        <div className="card">
                             <div className="card-header">
-                                <p className="card-title">Users</p>
-                                <span className="card-icon">▣</span>
+                                <p className="card-title">In Progress</p>
+                                {/* <span className="card-icon">▣</span> */}
                             </div>
-                            <div className="card-value">{summary.summary.roleCounts.USER}</div>
+                            <div className="card-value">{summary.summary.statusCounts.IN_PROGRESS || 0}</div>
+                            <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>Backend-authenticated users</p>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <p className="card-title">Resolved Tickets</p>
+                                {/* <span className="card-icon">▣</span> */}
+                            </div>
+                            <div className="card-value">{summary.summary.statusCounts.RESOLVED || 0}</div>
+                            <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>Backend-authenticated users</p>
+                        </div>
+                        <div className="card">
+                            <div className="card-header">
+                                <p className="card-title">Unassigned Tickets</p>
+                                {/* <span className="card-icon">▣</span> */}
+                            </div>
+                            <div className="card-value">{summary.summary.unassignedTicketsCount || 0}</div>
                             <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>Backend-authenticated users</p>
                         </div>
                     </div>
