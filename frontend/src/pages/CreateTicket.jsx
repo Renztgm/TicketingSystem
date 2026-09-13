@@ -75,7 +75,7 @@ function CreateTicket() {
             setFormData({
                 title: '',
                 description: '',
-                priority: 'MEDIUM',
+                priority: 'LOW',
                 category: 'GENERAL',
             });
 

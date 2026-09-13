@@ -31,6 +31,7 @@ function NavBarVerticalComponent() {
         ADMIN: [
             { to: '/dashboard', label: 'Dashboard' },
             { to: '/chats', label: 'Chat' },
+            { to: '/users', label: 'Users' },
             { to: '/view-ticket', label: 'Tickets' },
             { to: '/view-history', label: 'History' },
             { to: '/create-account', label: 'Create Account' },

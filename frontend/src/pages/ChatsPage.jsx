@@ -4,12 +4,15 @@ import Navbar from '../components/NavBarComponent';
 import ChatMessages from '../components/ChatMessages';
 import ChatList from '../components/ChatList';
 import { getSocket } from '../lib/socket'; 
+import { useParams } from 'react-router-dom';
 import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
+let lastSelectedChatId = null;
 
 function ChatsPage() {
+    const { ticketId } = useParams();
     const [profile, setProfile] = useState(null);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
@@ -96,8 +99,14 @@ function ChatsPage() {
                 setChats(mappedChats);
 
                 if (mappedChats.length > 0) {
-                    setSelectedChat(mappedChats[0]);
-                    await loadMessages(mappedChats[0].id);
+                    const target =
+                        (ticketId && mappedChats.find((c) => String(c.id) === String(ticketId))) ||
+                        (!ticketId && lastSelectedChatId && mappedChats.find((c) => String(c.id) === String(lastSelectedChatId))) ||
+                        mappedChats[0];
+
+                    setSelectedChat(target);
+                    lastSelectedChatId = target.id; // NEW: in-memory only
+                    await loadMessages(target.id);
                 } else {
                     setSelectedChat(null);
                     setMessages([]);
@@ -110,15 +119,15 @@ function ChatsPage() {
         };
 
         loadChats();
-    }, [profile]);
+    }, [profile, ticketId]);
 
     // --- NEW: connect the socket once, on mount ---
     useEffect(() => {
         const socket = getSocket();
         socketRef.current = socket;
 
-        socket.on('connect', () => console.log('✅ socket connected:', socket.id));
-        socket.on('connect_error', (err) => console.log('❌ socket connect error:', err.message));
+        // socket.on('connect', () => console.log('✅ socket connected:', socket.id));
+        // socket.on('connect_error', (err) => console.log('❌ socket connect error:', err.message));
 
         return () => {
             socket.off('connect');
@@ -127,54 +136,54 @@ function ChatsPage() {
     }, []);
 
     // --- NEW: join/leave the room for the active chat, listen for new messages ---
-useEffect(() => {
-    const socket = socketRef.current;
-    if (!selectedChat || !socket) return;
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!selectedChat || !socket) return;
 
-    socket.emit('joinChat', selectedChat.id);
+        socket.emit('joinChat', selectedChat.id);
 
-    // Nuke any stale listeners left over from previous Fast Refresh cycles,
-    // regardless of whether they're the "same" function reference or not.
-    socket.off('newMessage');
+        // Nuke any stale listeners left over from previous Fast Refresh cycles,
+        // regardless of whether they're the "same" function reference or not.
+        socket.off('newMessage');
 
-    const handleNewMessage = (incoming) => {
-        setMessages((prev) => {
-            if (prev.some((m) => m.id === incoming.id)) {
-                return prev;
-            }
+        const handleNewMessage = (incoming) => {
+            setMessages((prev) => {
+                if (prev.some((m) => m.id === incoming.id)) {
+                    return prev;
+                }
 
-            const tempIdx = prev.findIndex(
-                (m) =>
-                    pendingIdsRef.current.has(m.id) &&
-                    m.content === incoming.content &&
-                    m.sender?.id === incoming.senderId
-            );
-            if (tempIdx !== -1) {
-                const updated = [...prev];
-                pendingIdsRef.current.delete(prev[tempIdx].id);
-                updated[tempIdx] = incoming;
-                return updated;
-            }
+                const tempIdx = prev.findIndex(
+                    (m) =>
+                        pendingIdsRef.current.has(m.id) &&
+                        m.content === incoming.content &&
+                        m.sender?.id === incoming.senderId
+                );
+                if (tempIdx !== -1) {
+                    const updated = [...prev];
+                    pendingIdsRef.current.delete(prev[tempIdx].id);
+                    updated[tempIdx] = incoming;
+                    return updated;
+                }
 
-            return [...prev, incoming];
-        });
-    };
+                return [...prev, incoming];
+            });
+        };
 
-    socket.on('newMessage', handleNewMessage);
+        socket.on('newMessage', handleNewMessage);
 
-    return () => {
-        socket.emit('leaveChat', selectedChat.id);
-        socket.off('newMessage', handleNewMessage);
-    };
-}, [selectedChat]);
+        return () => {
+            socket.emit('leaveChat', selectedChat.id);
+            socket.off('newMessage', handleNewMessage);
+        };
+    }, [selectedChat]);
 
     const handleSelectChat = async (chat) => {
         setSelectedChat(chat);
         setMessageText('');
         setErrorMessage('');
+        lastSelectedChatId = chat.id; // NEW
         await loadMessages(chat.id);
     };
-
     const handleSendMessage = async (event) => {
         event.preventDefault();
 

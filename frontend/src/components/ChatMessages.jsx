@@ -59,7 +59,11 @@ function ChatMessages({ messages, currentUser, chatName, isLoading, messageText,
                 {uniqueMessages.map((message) => (
                     <div key={message.id} className={`chat-bubble ${message.sender?.id === currentUser?.id ? 'sent' : 'received'}`}>
                         <div className="message-header">
-                            <div className="sender-name">{message.sender?.name || message.sender?.email || 'Unknown sender'}</div>
+                            <div className="sender-name" style={{display: 'flex', alignItems: 'center', gap: '4px', textTransform: 'Capitalized'}}>{message.sender?.name || message.sender?.email || 'Unknown sender'}
+                                <span style={message.sender?.role === 'ADMIN' ? { color: '#3b82f6', textTransform: 'Capitalized' } : message.sender?.role === 'AGENT' ? { color: '#d4d127', textTransform: 'Capitalized' } : {}}>
+                                    {message.sender?.role || 'User'}
+                                </span>
+                            </div>
                             <div className="timestamp">{formatTimestamp(message.sentAt)}</div>
                         </div>
                         <div className="message-content">

@@ -192,32 +192,31 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
 app.get('/api/tickets', authenticateToken, async (req, res) => {
   try {
-    const { status } = req.query; // e.g. ?status=OPEN
+    const { status } = req.query;
     const isStaff = ['ADMIN', 'AGENT'].includes(req.auth.role);
- 
+
     const where = {};
- 
-    // Default to open tickets if no status filter is passed
-    where.status = status || 'OPEN';
- 
-    // Regular users only see their own tickets; staff see everyone's
+
+    if (status && status !== 'ALL') {
+      where.status = status;
+    } else if (!status) {
+      where.status = 'OPEN'; // default when nothing specified at all
+    }
+    // if status === 'ALL', leave where.status unset → no filter
+
     if (!isStaff) {
       where.userId = req.auth.userId;
     }
- 
+
     const tickets = await prisma.ticket.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        assignedAgent: {
-          select: { id: true, name: true, email: true },
-        },
+        user: { select: { id: true, name: true, email: true } },
+        assignedAgent: { select: { id: true, name: true, email: true } },
       },
     });
- 
+
     return res.json({ tickets });
   } catch (error) {
     console.error(error);
@@ -418,6 +417,35 @@ app.post('/api/chats/messages/:chatId', authenticateToken, async (req, res) => {
   }
 });
 
+app.patch('/api/tickets/:ticketId/status', authenticateToken, async (req, res) => {
+  try{
+    if (req.auth.role !== 'ADMIN' && req.auth.role !== 'AGENT') {
+      return res.status(403).json({ error: 'Forbidden access' });
+    }
+
+    const { ticketId } = req.params;
+    const { status } = req.body;
+
+    if (!['OPEN', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const statusUpdate = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: { status },
+    });
+
+    return res.json({
+      message: 'Status updated successfully.',
+      ticket: statusUpdate,
+    });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server. (Error: 500)' });
+  }
+
+});
 app.patch('/api/tickets/:ticketId/assign', authenticateToken, async (req, res) => {
   try {
     if (req.auth.role !== 'ADMIN') {
@@ -489,6 +517,68 @@ app.patch('/api/tickets/:ticketId/assign', authenticateToken, async (req, res) =
     console.error(error);
     return res.status(500).json({ error: 'Something went wrong on the server. (Error: 500)' });
   }
+});
+app.get('/api/users/:userId', authenticateToken, async (req, res)=> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.params.userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    return res.json({ user });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+});
+
+app.get('/api/users', authenticateToken, async (req, res) => {
+  try {
+    // const user = await prisma.user.findUnique({
+    //   where: {
+    //     id: req.params.userId,
+    //   },
+    //   select: {
+    //     id: true,
+    //     name: true,
+    //     email: true,
+    //     role: true,
+    //     createdAt: true,
+    //     updatedAt: true,
+    //   }
+    // });
+
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    });
+    return res.json({ users });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Something went wrong on the server.' });
+  }
+
 });
 
 app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {

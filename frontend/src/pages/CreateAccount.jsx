@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../css/styles.css';
 import Navbar from '../components/NavBarComponent';
 import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
+import { useNotification } from '../context/NotificationContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
 const USER_KEY = 'ticketing_user';
 
 function CreateAccount() {
+	const { showNotification } = useNotification();
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		name: '',
@@ -115,6 +117,7 @@ function CreateAccount() {
 		);
 	}
 			setSuccessMessage(data.message || 'Account created successfully. You can now log in.');
+			showNotification({ type: 'success', message: 'Account created successfully.'});
 			setFormData({
 				name: '',
 				email: '',
@@ -128,6 +131,7 @@ function CreateAccount() {
 			}, 2000);
 		} catch (error) {
 			setErrorMessage(error.message || 'Could not create account. Please try again.');
+			showNotification({ type: 'error', message: 'Error has occurred: ' + error.message });
 		} finally {
 			setIsLoading(false);
 		}
@@ -348,7 +352,7 @@ function CreateAccount() {
 								</button>
 								<button
 									type="button"
-									onClick={() => navigate('/')}
+									// onClick={() => navigate('/')}
 									disabled={isLoading}
 									style={{
 										padding: '10px 30px',

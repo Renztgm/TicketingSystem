@@ -4,6 +4,7 @@ import '../css/styles.css';
 import Navbar from '../components/NavBarComponent';
 import NavBarVerticalComponent from '../components/NavBarVerticalComponent';
 import Back_Button from '../assets/back_button_png.png';
+import { useNotification } from '../context/NotificationContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const TOKEN_KEY = 'ticketing_token';
@@ -18,6 +19,7 @@ function formatDate(value) {
 }
 
 function TicketDetails() {
+	const { showNotification } = useNotification();
 	const { ticketId } = useParams();
 	const navigate = useNavigate();
 	const [ticket, setTicket] = useState(null);
@@ -29,6 +31,11 @@ function TicketDetails() {
 	const [isAssigning, setIsAssigning] = useState(false);
 	const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
 	const isAdmin = currentUser?.role === 'ADMIN';
+	const isAgent = currentUser?.role === 'AGENT';
+
+	const [selectedStatus, setSelectedStatus] = useState('');
+	const [isUpdatingStatus, setIsUpdatingStatus] = useState(false); 
+	
 
 	const loadTicket = async (id) => {
 		try {
@@ -57,6 +64,7 @@ function TicketDetails() {
 
 			setTicket(data.ticket);
 			setSelectedAgentId(data.ticket?.assignedAgent?.id || data.ticket?.assignedTo || '');
+			setSelectedStatus(data.ticket?.status || '');
 		} catch (error) {
 			setTicket(null);
 			setErrorMessage(error.message || 'Could not load ticket details.');
@@ -110,7 +118,13 @@ function TicketDetails() {
 		}
 
 		if (!selectedAgentId) {
-			setErrorMessage('Select an agent first.');
+			// setErrorMessage('Select an agent first.');
+			showNotification({ type: 'error', message: 'Select an agent first.' });
+			return;
+		}
+
+		if (ticket.assignedAgent?.id === selectedAgentId) {
+			showNotification({ type: 'error', message: 'This agent is already assigned to this ticket.' });
 			return;
 		}
 
@@ -137,11 +151,60 @@ function TicketDetails() {
 			}
 
 			setTicket(data.ticket);
-			setSuccessMessage('Agent assigned successfully.');
+			// setSuccessMessage('Agent assigned successfully.');
+			showNotification({ type: 'success', message: 'Agent assigned successfully.' });
 		} catch (error) {
-			setErrorMessage(error.message || 'Could not assign agent.');
+			// setErrorMessage(error.message || 'Could not assign agent.');
 		} finally {
 			setIsAssigning(false);
+		}
+	};
+
+	const handleUpdateStatus = async (event) => {
+		event.preventDefault();
+
+		if (!ticket) {
+			showNotification({ type: 'error', message: 'Load a ticket before updating status.' });
+			return;
+		}
+
+		if (!selectedStatus) {
+			showNotification({ type: 'error', message: 'Select a status first.' });
+			return;
+		}
+
+		if (selectedStatus === ticket.status) {
+			showNotification({ type: 'error', message: 'Ticket already has this status.' });
+			return;
+		}
+
+		try {
+			setIsUpdatingStatus(true);
+
+			const token = localStorage.getItem(TOKEN_KEY);
+
+			const response = await fetch(`${API_BASE_URL}/api/tickets/${ticket.id}/status`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ status: selectedStatus }),
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Failed to update status.');
+			}
+
+			setTicket(data.ticket);
+			setSelectedStatus(data.ticket?.status || selectedStatus);
+			showNotification({ type: 'success', message: 'Ticket status updated successfully.' });
+		} catch (error) {
+			showNotification({ type: 'error', message: error.message || 'Could not update status.' });
+		} finally {
+			setIsUpdatingStatus(false);
 		}
 	};
 
@@ -151,6 +214,8 @@ function TicketDetails() {
 		RESOLVED: { backgroundColor: '#e3f2fd', color: '#1565c0' },
 		CLOSED: { backgroundColor: '#eceff1', color: '#455a64' },
 	}), []);
+
+	
 
 	return (
 		<div className="dashboard-wrapper">
@@ -298,6 +363,48 @@ function TicketDetails() {
 												}}
 											>
 												{isAssigning ? 'Assigning...' : 'Assign Agent'}
+											</button>
+										</form>
+									</div>
+								)}
+								{((currentUser.id === ticket.assignedAgent?.id) || isAdmin) && (
+									<div style={{ marginTop: '24px', padding: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', backgroundColor: '#fff' }}>
+										<p style={{ margin: '0 0 12px 0', color: '#6b7280', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</p>
+										<form onSubmit={handleUpdateStatus} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'end' }}>
+											<div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+												<label htmlFor="statusSelect" style={{ fontWeight: 600 }}>Select Status</label>
+												<select
+													id="statusSelect"
+													value={selectedStatus}
+													onChange={(e) => setSelectedStatus(e.target.value)}
+													style={{
+														padding: '10px 12px',
+														borderRadius: '6px',
+														border: '1px solid var(--border-color)',
+														fontSize: '14px',
+													}}
+												>
+													<option value="OPEN">Status: OPEN</option>
+													<option value="PENDING">Status: PENDING</option>
+													<option value="IN_PROGRESS">Status: IN PROGRESS</option>
+													<option value="RESOLVED">Status: RESOLVED</option>
+												</select>
+											</div>
+
+											<button
+												type="submit"
+												disabled={isUpdatingStatus}
+												style={{
+													padding: '10px 18px',
+													border: 'none',
+													borderRadius: '6px',
+													backgroundColor: isUpdatingStatus ? '#9ca3af' : 'var(--primary-color)',
+													color: '#fff',
+													fontWeight: 600,
+													cursor: isUpdatingStatus ? 'not-allowed' : 'pointer',
+												}}
+											>
+												{isUpdatingStatus ? 'Modifying...' : 'Submit'}
 											</button>
 										</form>
 									</div>

@@ -10,11 +10,6 @@ function Admin({summary}) {
             <div className="dashboard-container">
                 <Navbar />
                 <div className="dashboard-content">
-                    {/* <div className="dashboard-header">
-                        <h1>Dashboard</h1>
-                        <p>Welcome back! Here's a live overview from the backend.</p>
-                    </div> */}
-
                     <div className="dashboard-grid">
                         <div className="card">
                             <div className="card-header">

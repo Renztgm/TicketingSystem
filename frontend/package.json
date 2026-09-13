@@ -1,6 +1,8 @@
 {
   "name": "ticketing-frontend",
   "version": "1.0.0",
+  "description": "Frontend for ticketing system",
+  "author": "delicariu, baconjhonlorenz",
   "private": true,
   "type": "module",
   "scripts": {

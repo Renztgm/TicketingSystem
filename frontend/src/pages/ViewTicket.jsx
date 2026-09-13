@@ -23,7 +23,7 @@ function OpenTickets() {
 	const [priorityFilter, setPriorityFilter] = useState('');
 	const [technicianFilter, setTechnicianFilter] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
-	const [assignedToMeOnly, setAssignedToMeOnly] = useState(true);
+	const [assignedToMeOnly, setAssignedToMeOnly] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -31,15 +31,17 @@ function OpenTickets() {
 
 	const statusStyles = useMemo(() => ({
 		OPEN: { backgroundColor: '#e8f5e9', color: '#2e7d32' },
+		PENDING: { backgroundColor: '#fff8e1', color: '#ed6c02' },
 		IN_PROGRESS: { backgroundColor: '#fff8e1', color: '#ed6c02' },
 		RESOLVED: { backgroundColor: '#e3f2fd', color: '#1565c0' },
 		CLOSED: { backgroundColor: '#eceff1', color: '#455a64' },
 	}), []);
 
 	const priorityStyles = useMemo(() => ({
-		HIGH: { backgroundColor: '#fee2e2', color: '#b91c1c' },
-		MEDIUM: { backgroundColor: '#fef3c7', color: '#92400e' },
-		LOW: { backgroundColor: '#e0f2fe', color: '#0369a1' },
+		URGENT: { backgroundColor: 'rgba(255, 235, 238, 0.55)', color: '#ff0000' },
+		HIGH: { backgroundColor: 'rgba(254, 226, 226, 0.55)', color: '#ff7300' },
+		MEDIUM: { backgroundColor: '#fff70088', color: '#fff700' },
+		LOW: { backgroundColor: '#00a6ff4f', color: '#00a6ff' },
 	}), []);
 
 	const loadTickets = async (status) => {
@@ -167,10 +169,11 @@ function OpenTickets() {
 								style={selectStyle}
 							>
 								<option value="OPEN">Status: Open</option>
+								<option value="PENDING">Status: Pending</option>
 								<option value="IN_PROGRESS">Status: In Progress</option>
 								<option value="RESOLVED">Status: Resolved</option>
 								<option value="CLOSED">Status: Closed</option>
-								<option value="">Status: All</option>
+								<option value="ALL">Status: All</option>
 							</select>
 
 							<select
@@ -199,14 +202,14 @@ function OpenTickets() {
 								))}
 							</select>
 
-							<label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, cursor: 'pointer' }}>
+							{/* <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, cursor: 'pointer' }}>
 								<input
 									type="checkbox"
 									checked={assignedToMeOnly}
 									onChange={(e) => setAssignedToMeOnly(e.target.checked)}
 								/>
 								Me only
-							</label>
+							</label> */}
 
 							<Link to='/create-ticket' className="btn btn-primary" style={{ marginLeft: 'auto' }}>Create Ticket</Link>
 						</div>

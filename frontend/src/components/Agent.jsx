@@ -19,7 +19,7 @@ function formatDate(value) {
 function Agent() {
 	const navigate = useNavigate();
 	const [tickets, setTickets] = useState([]);
-	const [statusFilter, setStatusFilter] = useState('OPEN');
+	const [statusFilter, setStatusFilter] = useState('');
 	const [priorityFilter, setPriorityFilter] = useState('');
 	const [technicianFilter, setTechnicianFilter] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +31,7 @@ function Agent() {
 
 	const statusStyles = useMemo(() => ({
 		OPEN: { backgroundColor: '#e8f5e9', color: '#2e7d32' },
+		PENDING: { backgroundColor: '#fff8e1', color: '#ed6c02' },
 		IN_PROGRESS: { backgroundColor: '#fff8e1', color: '#ed6c02' },
 		RESOLVED: { backgroundColor: '#e3f2fd', color: '#1565c0' },
 		CLOSED: { backgroundColor: '#eceff1', color: '#455a64' },
@@ -40,6 +41,7 @@ function Agent() {
 		HIGH: { backgroundColor: '#fee2e2', color: '#b91c1c' },
 		MEDIUM: { backgroundColor: '#fef3c7', color: '#92400e' },
 		LOW: { backgroundColor: '#e0f2fe', color: '#0369a1' },
+		URGENT: { backgroundColor: 'rgba(255, 235, 238, 0.55)', color: '#ff0000' },
 	}), []);
 
 	const loadTickets = async (status) => {
@@ -167,6 +169,7 @@ function Agent() {
 								style={selectStyle}
 							>
 								<option value="OPEN">Status: Open</option>
+								<option value="PENDING">Status: Pending</option>
 								<option value="IN_PROGRESS">Status: In Progress</option>
 								<option value="RESOLVED">Status: Resolved</option>
 								<option value="CLOSED">Status: Closed</option>
